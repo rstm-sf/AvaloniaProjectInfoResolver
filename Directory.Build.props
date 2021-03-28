@@ -1,0 +1,16 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>9</LangVersion>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Authors>AvaloniaProjectInfoResolver Contributors</Authors>
+    <Company>AvaloniaProjectInfoResolver Contributors</Company>
+    <Copyright>Copyright (c) 2021 AvaloniaProjectInfoResolver Contributors</Copyright>
+  </PropertyGroup>
+
+</Project>

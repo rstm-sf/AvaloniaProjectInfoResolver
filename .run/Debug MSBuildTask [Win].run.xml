@@ -1,0 +1,14 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Debug MSBuildTask [Win]" type="RunExe" factoryName=".NET Executable">
+    <option name="EXE_PATH" value="C:/Program Files/dotnet/sdk/5.0.103/MSBuild.dll" />
+    <option name="PROGRAM_PARAMETERS" value="-t:Rebuild;RunAvaloniaPreviewProjectInfoResolverTask" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/AvaloniaProjectInfoResolver.PreviewTask.Debug/" />
+    <option name="PASS_PARENT_ENVS" value="1" />
+    <option name="USE_EXTERNAL_CONSOLE" value="0" />
+    <option name="USE_MONO" value="0" />
+    <option name="RUNTIME_ARGUMENTS" value="" />
+    <method v="2">
+      <option name="Build Solution" enabled="true" />
+    </method>
+  </configuration>
+</component>
