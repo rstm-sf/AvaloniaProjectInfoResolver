@@ -8,6 +8,9 @@ namespace AvaloniaProjectInfoResolver
 {
     public class ProjectInfoResolver
     {
+        private static readonly string SelfDirectoryPath =
+            Path.GetDirectoryName(typeof(ProjectInfoResolver).Assembly.Location)!;
+
         public async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(string projectFilePath)
         {
             var receiver = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -16,7 +19,9 @@ namespace AvaloniaProjectInfoResolver
             {
                 UseShellExecute = false,
                 Arguments = string.Concat(
-                    "msbuild ./AvaloniaProjectInfoResolver.Core/test.proj -noLogo",
+                    "msbuild ",
+                    SelfDirectoryPath,
+                    "/AvaloniaProjectInfoResolver.Core/AvaloniaPreviewInfoResolver.proj -noLogo",
 #if !DEBUG
                     " -noConsoleLogger",
 #endif

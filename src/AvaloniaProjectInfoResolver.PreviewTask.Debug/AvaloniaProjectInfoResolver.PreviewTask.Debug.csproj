@@ -9,6 +9,6 @@
     <AvaloniaProjectInfoResolverTasksDirectory>$(MSBuildThisFileDirectory)\..\AvaloniaProjectInfoResolver.PreviewTask\bin\Debug\netcoreapp2.1\publish\</AvaloniaProjectInfoResolverTasksDirectory>
   </PropertyGroup>
 
-  <Import Project="..\AvaloniaProjectInfoResolver\AvaloniaProjectInfoResolver.Core\test.proj" />
+  <Import Project="..\AvaloniaProjectInfoResolver\AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj" />
 
 </Project>
