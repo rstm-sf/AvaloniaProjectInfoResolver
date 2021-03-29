@@ -31,19 +31,17 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 : string.Empty;
         }
 
+        /// <remarks>
+        /// F.ex., AvaloniaResource includes AvaloniaXaml in case of 'GenerateAvaloniaResources' target.
+        /// For more info, see https://github.com/AvaloniaUI/Avalonia/blob/f33e0de004846be854836e095a3721dc80d9fd94/packages/Avalonia/AvaloniaBuildTasks.targets#L48-L55
+        /// </remarks>
         public static string ResultFromArrayAsSingleSkipNonXaml(
             this Dictionary<string, ITaskItem[]> targetOutputs, string target)
         {
             var output = targetOutputs[target];
             return output.Length > 0
-                ? string.Join(";", output.Where(IsXamlFile).Select(x => x.ItemSpec))
+                ? string.Join(";", output.Where(x => x.GetMetadata("Extension") == ".xaml").Select(x => x.ItemSpec))
                 : string.Empty;
-        }
-
-        private static bool IsXamlFile(ITaskItem item)
-        {
-            var extension = item.GetMetadata("Extension");
-            return extension == ".xaml" || extension == ".axaml" || extension == ".paml";
         }
     }
 }
