@@ -43,7 +43,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         private static bool IsXamlFile(ITaskItem item)
         {
             var extension = item.GetMetadata("Extension");
-            return extension == ".axaml" || extension == ".xaml" || extension == ".paml";
+            return extension == ".xaml" || extension == ".axaml" || extension == ".paml";
         }
     }
 }
