@@ -2,30 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <MSBuildWarningsAsMessages>NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\netcoreapp2.1\*">
-      <Link>AvaloniaProjectInfoResolver.Core\netcore\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\net472\*">
-      <Link>AvaloniaProjectInfoResolver.Core\netfx\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoTypes.cs">
       <Link>AvaloniaProjectInfoTypes.cs</Link>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="AvaloniaProjectInfoResolver.props" />
+  <Import Project="AvaloniaProjectInfoResolver.targets" />
 
 </Project>

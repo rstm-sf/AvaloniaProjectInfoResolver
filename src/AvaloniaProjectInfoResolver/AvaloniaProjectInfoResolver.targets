@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="BuildPreviewTask" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ResolverCoreDirectory>$(MSBuildProjectDirectory)\$(OutDir)\AvaloniaProjectInfoResolver.Core</ResolverCoreDirectory>
+    </PropertyGroup>
+    <MSBuild Projects="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoResolver.PreviewTask.csproj"
+             Properties="Configuration=$(Configuration);TargetFramework=netcoreapp2.1"
+             Targets="Publish" />
+    <MSBuild Projects="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoResolver.PreviewTask.csproj"
+             Properties="Configuration=$(Configuration);TargetFramework=net472"
+             Targets="Publish" />
+  </Target>
+
+</Project>

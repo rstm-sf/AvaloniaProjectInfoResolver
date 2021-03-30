@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <VersionPrefix>0.0.1</VersionPrefix>
+    <Description>A utility to resolve Avalonia features from MSBuild Project File</Description>
     <Authors>AvaloniaProjectInfoResolver Contributors</Authors>
     <Company>AvaloniaProjectInfoResolver Contributors</Company>
     <Copyright>Copyright (c) 2021 AvaloniaProjectInfoResolver Contributors</Copyright>

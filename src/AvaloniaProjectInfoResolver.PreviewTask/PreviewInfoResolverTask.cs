@@ -49,7 +49,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
         private readonly Dictionary<string, string> _globalPropertiesCommon;
 
-        [Required] public string ParentId { get; set; } = null!;
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public string? ParentId { get; set; }
 
         [Required] public string ProjectFile { get; set; } = null!;
 

@@ -25,7 +25,6 @@ namespace AvaloniaProjectInfoResolver
 #if !DEBUG
                     " -noConsoleLogger",
 #endif
-                    " -t:RunAvaloniaPreviewProjectInfoResolverTask",
                     " -p:AvaloniaPreviewParentId=",
                     receiver.GetClientHandleAsString(),
                     " -p:AvaloniaProjectFilePath=",
