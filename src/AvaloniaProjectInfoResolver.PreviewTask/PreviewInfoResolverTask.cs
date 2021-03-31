@@ -2,6 +2,7 @@
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Xml.Serialization;
@@ -90,9 +91,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!isSuccess)
                 return false;
 
-            var isPreviewContains = !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetCoreToolPath)
-                                 || !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetFullToolPath);
-            if (!isPreviewContains)
+            if (!IsReferencesAvalonia(projectInfo))
                 return false;
 
             var projectInfoTfmCollection = new List<ProjectInfoByTfm>(targetFrameworks.Length);
@@ -108,6 +107,28 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
             SendMessage(projectInfo);
             return true;
+        }
+
+        private bool IsReferencesAvalonia(ProjectInfo projectInfo)
+        {
+            var isPreviewContains = !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetCoreToolPath)
+                                 || !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetFullToolPath);
+            if (isPreviewContains)
+                return true;
+
+            BuildEngine.LogErrorEvent(new BuildErrorEventArgs(
+                "APIR",
+                string.Empty,
+                ProjectFile,
+                0,
+                0,
+                0,
+                0,
+                "MSBuild project file does not reference AvaloniaUI",
+                string.Empty,
+                string.Empty));
+
+            return false;
         }
 
         private bool TryResolveProjectInfoTfms(out string[] targetFrameworks)
@@ -202,7 +223,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
         private static string SerializeToXml(ProjectInfo data)
         {
-            using var stringWriter = new StringWriter();
+            using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
 
             var serializer = new XmlSerializer(data.GetType());
             serializer.Serialize(stringWriter, data);

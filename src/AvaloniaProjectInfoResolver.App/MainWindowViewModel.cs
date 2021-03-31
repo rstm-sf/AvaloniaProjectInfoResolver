@@ -10,7 +10,7 @@ namespace AvaloniaProjectInfoResolver.App
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private static readonly ProjectInfoResolver ProjectInfoResolver = new();
+        private static readonly IProjectInfoResolver ProjectInfoResolver = new ProjectInfoResolver();
 
         private string _projectFilePath;
 
@@ -46,7 +46,7 @@ namespace AvaloniaProjectInfoResolver.App
             var rootNode = await Task.Run(async () =>
             {
                 var result = await ProjectInfoResolver.ResolvePreviewProjectInfoAsync(fileName);
-                return result is null ? null : NodesHelper.SelectRootNode(result);
+                return result.HasError ? null : NodesHelper.SelectRootNode(result.ProjectInfo!);
             });
 
             if (rootNode is not null)

@@ -26,6 +26,11 @@ namespace AvaloniaProjectInfoResolver
 
         public void ReadXml(XmlReader reader)
         {
+            var wasEmpty = reader.IsEmptyElement;
+            reader.Read();
+            if (wasEmpty)
+                return;
+
             AvaloniaPreviewerNetCoreToolPath = reader.ReadElementString();
             AvaloniaPreviewerNetFullToolPath = reader.ReadElementString();
             AvaloniaResource = reader.ReadElementString();
@@ -77,6 +82,11 @@ namespace AvaloniaProjectInfoResolver
 
         public void ReadXml(XmlReader reader)
         {
+            var wasEmpty = reader.IsEmptyElement;
+            reader.Read();
+            if (wasEmpty)
+                return;
+
             ProjectRuntimeConfigFilePath = reader.ReadElementString();
             ProjectDepsFilePath = reader.ReadElementString();
             TargetFramework = reader.ReadElementString();
