@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading.Tasks;
@@ -6,14 +7,15 @@ using System.Xml.Serialization;
 
 namespace AvaloniaProjectInfoResolver
 {
-    public class ProjectInfoResolver
+    public class ProjectInfoResolver : IProjectInfoResolver
     {
         private static readonly string SelfDirectoryPath =
             Path.GetDirectoryName(typeof(ProjectInfoResolver).Assembly.Location)!;
 
-        public async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(string projectFilePath)
+        public async Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(string projectFilePath)
         {
-            var receiver = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
+            var receiverTask = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
+            var receiverLogger = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
 
             var startInfo = new ProcessStartInfo("dotnet")
             {
@@ -25,17 +27,24 @@ namespace AvaloniaProjectInfoResolver
 #if !DEBUG
                     " -noConsoleLogger",
 #endif
+                    " /logger:ProjectInfoMsBuildLogger,",
+                    SelfDirectoryPath,
+                    "/AvaloniaProjectInfoResolver.Core/AvaloniaProjectInfoResolver.MSBuildLogger.dll;",
+                    receiverLogger.GetClientHandleAsString(),
                     " -p:AvaloniaPreviewParentId=",
-                    receiver.GetClientHandleAsString(),
+                    receiverTask.GetClientHandleAsString(),
                     " -p:AvaloniaProjectFilePath=",
                     projectFilePath)
             };
             Process.Start(startInfo);
 
-            receiver.DisposeLocalCopyOfClientHandle();
+            receiverTask.DisposeLocalCopyOfClientHandle();
+            receiverLogger.DisposeLocalCopyOfClientHandle();
 
-            var result = await ResolvePreviewProjectInfoAsync(receiver).ConfigureAwait(false);
-            return result;
+            var info = await ResolvePreviewProjectInfoAsync(receiverTask).ConfigureAwait(false);
+            var error = await ResolveLoggerProjectInfoAsync(receiverLogger).ConfigureAwait(false);
+
+            return new AvaloniaProjectInfoResult(info, error);
         }
 
         private static async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(AnonymousPipeServerStream receiver)
@@ -47,15 +56,33 @@ namespace AvaloniaProjectInfoResolver
             while ((line = await reader.ReadLineAsync()) != null)
                 xmlData += line;
 
-            return string.IsNullOrEmpty(xmlData) ? null : DeserializeFromXml(xmlData);
+            return string.IsNullOrEmpty(xmlData)
+                ? null
+                : (ProjectInfo)DeserializeFromXml(xmlData, typeof(ProjectInfo));
         }
 
-        private static ProjectInfo DeserializeFromXml(string xmlData)
+        private static async Task<string> ResolveLoggerProjectInfoAsync(AnonymousPipeServerStream receiver)
         {
-            var deserializer = new XmlSerializer(typeof(ProjectInfo));
+            string line;
+            var xmlData = string.Empty;
+            using var reader = new StreamReader(receiver);
+
+            while ((line = await reader.ReadLineAsync()) != null)
+                xmlData += line;
+
+            if (string.IsNullOrEmpty(xmlData))
+                return String.Empty;
+
+            var errorArgs = (ProjectInfoErrorArgs)DeserializeFromXml(xmlData, typeof(ProjectInfoErrorArgs));
+            return errorArgs.Subcategory == "APIR" ? errorArgs.Message : errorArgs.ToString();
+        }
+
+        private static object DeserializeFromXml(string xmlData, Type type)
+        {
+            var deserializer = new XmlSerializer(type);
             using var stringReader = new StringReader(xmlData);
 
-            return (ProjectInfo)deserializer.Deserialize(stringReader);
+            return deserializer.Deserialize(stringReader);
         }
     }
 }

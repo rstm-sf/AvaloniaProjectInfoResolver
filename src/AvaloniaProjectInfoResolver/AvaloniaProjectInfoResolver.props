@@ -56,4 +56,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\AvaloniaProjectInfoResolver.MSBuildLogger\bin\$(Configuration)\netstandard2.0\publish\*.dll">
+      <Link>AvaloniaProjectInfoResolver.Core\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>lib\$(TargetFramework)\AvaloniaProjectInfoResolver.Core</PackagePath>
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
 </Project>
