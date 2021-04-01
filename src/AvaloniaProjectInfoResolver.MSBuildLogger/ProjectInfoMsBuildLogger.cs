@@ -1,7 +1,5 @@
-﻿using System.Globalization;
-using System.IO;
+﻿using System.IO;
 using System.IO.Pipes;
-using System.Xml.Serialization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -45,27 +43,11 @@ namespace AvaloniaProjectInfoResolver.MSBuildLogger
             if (_streamWriter is null)
                 return;
 
-            var xmlData = SerializeToXml(new ProjectInfoErrorArgs
-            {
-                Subcategory = e.Subcategory,
-                Code = e.Code,
-                File = e.File,
-                LineNumber = e.LineNumber,
-                ColumnNumber = e.ColumnNumber,
-                Message = e.Message
-            });
-            _streamWriter.WriteLine(xmlData);
+            var error = e.Subcategory == "APIR"
+                ? e.Message
+                : $"{e.File}({e.LineNumber}, {e.ColumnNumber}): [{e.Code}] {e.Message}";
+            _streamWriter.WriteLine(error);
             _streamWriter.Flush();
-        }
-
-        private static string SerializeToXml(ProjectInfoErrorArgs data)
-        {
-            using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-
-            var serializer = new XmlSerializer(data.GetType());
-            serializer.Serialize(stringWriter, data);
-
-            return stringWriter.ToString();
         }
     }
 }

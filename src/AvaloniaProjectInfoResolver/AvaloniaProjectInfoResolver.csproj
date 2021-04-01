@@ -5,9 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\AvaloniaProjectInfoResolver.MSBuildLogger\ProjectInfoErrorArgs.cs">
-      <Link>ProjectInfoErrorArgs.cs</Link>
-    </Compile>
     <Compile Include="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoTypes.cs">
       <Link>AvaloniaProjectInfoTypes.cs</Link>
     </Compile>

@@ -4,15 +4,14 @@
     {
         public ProjectInfo? ProjectInfo { get; }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        public string Error { get; }
+        public string Errors { get; }
 
-        public bool HasError => Error.Length > 0;
+        public bool HasError => Errors.Length > 0;
 
-        public AvaloniaProjectInfoResult(ProjectInfo? projectInfo, string error)
+        public AvaloniaProjectInfoResult(ProjectInfo? projectInfo, string errors)
         {
             ProjectInfo = projectInfo;
-            Error = error;
+            Errors = errors;
         }
     }
 }

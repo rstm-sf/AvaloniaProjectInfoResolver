@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AvaloniaProjectInfoResolver.App.MainWindow"
         Title="AvaloniaProjectInfoResolver.App"
-        Width="800" Height="600" >
+        Width="1000" Height="600" >
 
     <Design.DataContext>
         <app:MainWindowViewModel />
@@ -19,22 +19,33 @@
                 Content="Open Project"
                 Margin="4"
                 Grid.Row="0" Grid.Column="0" />
-        <TextBlock Text="{Binding ProjectFilePath}"
-                   Margin="4"
-                   Grid.Row="0" Grid.Column="1" />
+        <TextBox Text="{Binding ProjectFilePath}"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 Margin="4"
+                 Grid.Row="0" Grid.Column="1" />
         <Border CornerRadius="{DynamicResource ControlCornerRadius}"
                 Padding="4" Margin="4"
                 BorderThickness="2"
                 BorderBrush="{DynamicResource SystemChromeBlackLowColor}"
                 Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-            <TreeView Items="{Binding Items}"
-                      Margin="4">
-                <TreeView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Header}"/>
-                    </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+            <DockPanel>
+                <TreeView Items="{Binding AvaloniaProjectProps}"
+                          IsVisible="{Binding IsVisibleAvaloniaProjectProps}"
+                          Margin="4">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Header}" />
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+                <TextBlock Text="{Binding Errors}"
+                           IsVisible="{Binding !IsVisibleAvaloniaProjectProps}"
+                           TextWrapping="Wrap"
+                           Foreground="Red"
+                           Margin="4" />
+            </DockPanel>
         </Border>
     </Grid>
 

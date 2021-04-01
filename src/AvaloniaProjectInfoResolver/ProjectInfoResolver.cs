@@ -64,17 +64,13 @@ namespace AvaloniaProjectInfoResolver
         private static async Task<string> ResolveLoggerProjectInfoAsync(AnonymousPipeServerStream receiver)
         {
             string line;
-            var xmlData = string.Empty;
+            var errors = string.Empty;
             using var reader = new StreamReader(receiver);
 
             while ((line = await reader.ReadLineAsync()) != null)
-                xmlData += line;
+                errors += line;
 
-            if (string.IsNullOrEmpty(xmlData))
-                return String.Empty;
-
-            var errorArgs = (ProjectInfoErrorArgs)DeserializeFromXml(xmlData, typeof(ProjectInfoErrorArgs));
-            return errorArgs.Subcategory == "APIR" ? errorArgs.Message : errorArgs.ToString();
+            return errors;
         }
 
         private static object DeserializeFromXml(string xmlData, Type type)
