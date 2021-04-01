@@ -20,15 +20,15 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             Assert.NotNull(info);
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetCoreToolPath));
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetFullToolPath));
-            Assert.Equal(info.AvaloniaResource, string.Empty);
+            Assert.Equal(string.Empty, info.AvaloniaResource);
             Assert.False(string.IsNullOrEmpty(info.AvaloniaXaml));
-            Assert.Equal(info.TargetFrameworks, string.Empty);
+            Assert.Equal(string.Empty, info.TargetFrameworks);
 
             var infoByTfm = info.ProjectInfoByTfmArray;
-            Assert.Equal(infoByTfm.Length, 1);
-            Assert.Equal(infoByTfm[0].TargetFramework, "net5.0");
+            Assert.Single(infoByTfm);
+            Assert.Equal("netcoreapp3.1", infoByTfm[0].TargetFramework);
             Assert.False(string.IsNullOrEmpty(infoByTfm[0].TargetPath));
-            Assert.Equal(infoByTfm[0].TargetFrameworkIdentifier, ".NETCoreApp");
+            Assert.Equal(".NETCoreApp", infoByTfm[0].TargetFrameworkIdentifier);
             Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectDepsFilePath));
             Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectRuntimeConfigFilePath));
         }
@@ -37,12 +37,12 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
         public async Task Should_ResolvePreviewProjectInfoAsync_TaskDebug_Not_References_Avalonia()
         {
             var projectInfoResolver = new ProjectInfoResolver();
-            var projPath = "../../../../../AvaloniaProjectInfoResolver.PreviewTask.Debug/AvaloniaProjectInfoResolver.PreviewTask.Debug.csproj";
+            var projPath = "../../../../../AvaloniaProjectInfoResolver/AvaloniaProjectInfoResolver.csproj";
 
             var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(projPath);
 
             Assert.True(result.HasError);
-            Assert.Equal(result.Error, projPath + ": MSBuild project file does not reference AvaloniaUI");
+            Assert.Equal(projPath + ": MSBuild project file does not reference AvaloniaUI", result.Error);
             Assert.Null(result.ProjectInfo);
         }
     }
