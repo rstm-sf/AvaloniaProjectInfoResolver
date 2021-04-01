@@ -4,14 +4,14 @@
     {
         public ProjectInfo? ProjectInfo { get; }
 
-        public string Errors { get; }
+        public string Error { get; }
 
-        public bool HasError => Errors.Length > 0;
+        public bool HasError => Error.Length > 0;
 
-        public AvaloniaProjectInfoResult(ProjectInfo? projectInfo, string errors)
+        public AvaloniaProjectInfoResult(ProjectInfo? projectInfo, string error)
         {
             ProjectInfo = projectInfo;
-            Errors = errors;
+            Error = error;
         }
     }
 }

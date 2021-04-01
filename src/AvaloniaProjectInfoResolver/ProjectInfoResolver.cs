@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -50,12 +51,13 @@ namespace AvaloniaProjectInfoResolver
         private static async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(AnonymousPipeServerStream receiver)
         {
             string line;
-            var xmlData = string.Empty;
+            var sb = new StringBuilder();
             using var reader = new StreamReader(receiver);
 
             while ((line = await reader.ReadLineAsync()) != null)
-                xmlData += line;
+                sb.Append(line);
 
+            var xmlData = sb.ToString();
             return string.IsNullOrEmpty(xmlData)
                 ? null
                 : (ProjectInfo)DeserializeFromXml(xmlData, typeof(ProjectInfo));
@@ -63,14 +65,9 @@ namespace AvaloniaProjectInfoResolver
 
         private static async Task<string> ResolveLoggerProjectInfoAsync(AnonymousPipeServerStream receiver)
         {
-            string line;
-            var errors = string.Empty;
             using var reader = new StreamReader(receiver);
-
-            while ((line = await reader.ReadLineAsync()) != null)
-                errors += line;
-
-            return errors;
+            var error = await reader.ReadLineAsync();
+            return error ?? string.Empty;
         }
 
         private static object DeserializeFromXml(string xmlData, Type type)

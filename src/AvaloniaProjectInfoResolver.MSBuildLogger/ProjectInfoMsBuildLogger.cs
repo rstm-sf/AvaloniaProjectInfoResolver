@@ -44,7 +44,7 @@ namespace AvaloniaProjectInfoResolver.MSBuildLogger
                 return;
 
             var error = e.Subcategory == "APIR"
-                ? e.Message
+                ? $"{e.File}: {e.Message}"
                 : $"{e.File}({e.LineNumber}, {e.ColumnNumber}): [{e.Code}] {e.Message}";
             _streamWriter.WriteLine(error);
             _streamWriter.Flush();

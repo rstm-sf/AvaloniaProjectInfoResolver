@@ -15,7 +15,7 @@ namespace AvaloniaProjectInfoResolver.App
 
         private string _projectFilePath;
 
-        private string _errors;
+        private string _errorMessage;
 
         public string ProjectFilePath
         {
@@ -23,13 +23,13 @@ namespace AvaloniaProjectInfoResolver.App
             private set => this.RaiseAndSetIfChanged(ref _projectFilePath, value);
         }
 
-        public string Errors
+        public string ErrorMessage
         {
-            get => _errors;
-            private set => this.RaiseAndSetIfChanged(ref _errors, value);
+            get => _errorMessage;
+            private set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
         }
 
-        public bool IsVisibleAvaloniaProjectProps => string.IsNullOrEmpty(Errors);
+        public bool IsVisibleAvaloniaProjectProps => string.IsNullOrEmpty(ErrorMessage);
 
         public ObservableCollection<INode> AvaloniaProjectProps { get; }
 
@@ -40,7 +40,7 @@ namespace AvaloniaProjectInfoResolver.App
         public MainWindowViewModel()
         {
             _projectFilePath = string.Empty;
-            _errors = string.Empty;
+            _errorMessage = string.Empty;
             AvaloniaProjectProps = new ObservableCollection<INode>();
             OpenProject = ReactiveCommand.CreateFromTask(OpenFileAsync);
             ShowOpenFileDialog = new Interaction<Unit, string?>();
@@ -48,7 +48,7 @@ namespace AvaloniaProjectInfoResolver.App
             this.WhenAnyValue(x => x.ProjectFilePath)
                 .Subscribe(async x => await UpdateTreeViewAsync(x));
 
-            this.WhenAnyValue(x => x.Errors)
+            this.WhenAnyValue(x => x.ErrorMessage)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(IsVisibleAvaloniaProjectProps)));
         }
 
@@ -71,13 +71,13 @@ namespace AvaloniaProjectInfoResolver.App
             {
                 var result = await ProjectInfoResolver.ResolvePreviewProjectInfoAsync(fileName);
                 var rootNode = result.HasError ? null : NodesHelper.SelectRootNode(result.ProjectInfo!);
-                return (rootNode, result.Errors);
+                return (rootNode, result.Error);
             });
 
             if (avaloniaProjectProps is not null)
                 AvaloniaProjectProps.AddRange(avaloniaProjectProps.Children);
 
-            Errors = errors;
+            ErrorMessage = errors;
         }
     }
 }
