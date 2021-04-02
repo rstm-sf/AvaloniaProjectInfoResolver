@@ -1,0 +1,48 @@
+name: 'Tests'
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: 1
+  configuration: Release
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        sdk:
+          - { version: 3.1.407, framework: netcoreapp3.1 }
+          - { version: 5.0.201, framework: net5.0 }
+
+    name: ${{ matrix.os }} / ${{ matrix.sdk.version }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    - uses: actions/checkout@v2
+    - name: Setup .NET SDK ${{ matrix.sdk.version }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.sdk.version }}
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build main library
+      working-directory: src/AvaloniaProjectInfoResolver
+      run: dotnet build -c ${{ env.configuration }}
+
+    - name: Build tests
+      working-directory: src/AvaloniaProjectInfoResolver.IntegrationTests
+      run: dotnet build -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }}
+
+    - name: Run tests
+      working-directory: src/AvaloniaProjectInfoResolver.IntegrationTests
+      run: dotnet test -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }} --no-build

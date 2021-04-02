@@ -40,7 +40,7 @@
                         </TreeDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-                <TextBlock Text="{Binding Errors}"
+                <TextBlock Text="{Binding ErrorMessage}"
                            IsVisible="{Binding !IsVisibleAvaloniaProjectProps}"
                            TextWrapping="Wrap"
                            Foreground="Red"

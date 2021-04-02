@@ -1,10 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <Target Name="RestoreCoreDependecies" BeforeTargets="Restore">
+    <MSBuild Projects="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoResolver.PreviewTask.csproj"
+             Targets="Restore" />
+    <MSBuild Projects="..\AvaloniaProjectInfoResolver.MSBuildLogger\AvaloniaProjectInfoResolver.MSBuildLogger.csproj"
+             Targets="Restore" />
+  </Target>
+
   <Target Name="PublishCoreDependecies" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ResolverCoreDirectory>$(MSBuildProjectDirectory)\$(OutDir)\AvaloniaProjectInfoResolver.Core</ResolverCoreDirectory>
-    </PropertyGroup>
     <MSBuild Projects="..\AvaloniaProjectInfoResolver.PreviewTask\AvaloniaProjectInfoResolver.PreviewTask.csproj"
              Properties="Configuration=$(Configuration);TargetFramework=netcoreapp2.1"
              Targets="Publish" />
