@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <IsPublishable>false</IsPublishable>
+    <IsPackable>true</IsPackable>
+    <PackageId>AvaloniaProjectInfoResolver</PackageId>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryUrl>https://github.com/rstm-sf/AvaloniaProjectInfoResolver.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/rstm-sf/AvaloniaProjectInfoResolver</PackageProjectUrl>
+    <PackageTags>Avalonia MSBuild project-system csproj fsproj</PackageTags>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackCoreDependecies</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\netcoreapp2.1\publish\*.targets">
+      <Link>AvaloniaProjectInfoResolver.Core\netcore\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\netcoreapp2.1\publish\*.props">
+      <Link>AvaloniaProjectInfoResolver.Core\netcore\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\netcoreapp2.1\publish\*.dll">
+      <Link>AvaloniaProjectInfoResolver.Core\netcore\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\net472\publish\*.targets">
+      <Link>AvaloniaProjectInfoResolver.Core\netfx\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\net472\publish\*.props">
+      <Link>AvaloniaProjectInfoResolver.Core\netfx\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\net472\publish\*.dll">
+      <Link>AvaloniaProjectInfoResolver.Core\netfx\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\AvaloniaProjectInfoResolver.MSBuildLogger\bin\$(Configuration)\netstandard2.0\publish\*.dll">
+      <Link>AvaloniaProjectInfoResolver.Core\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

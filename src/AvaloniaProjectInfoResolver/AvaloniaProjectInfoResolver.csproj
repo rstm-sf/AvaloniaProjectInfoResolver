@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackCoreDependeciesProj</TargetsForTfmSpecificContentInPackage>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,12 +13,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj">
+    <None Include="AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 
-  <Import Project="AvaloniaProjectInfoResolver.props" />
-  <Import Project="AvaloniaProjectInfoResolver.targets" />
+  <Target Name="PackCoreDependeciesProj">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="AvaloniaProjectInfoResolver.Core\AvaloniaPreviewInfoResolver.proj">
+        <PackagePath>coreDependecies\AvaloniaProjectInfoResolver.Core</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
+  <ItemGroup>
+    <Content Include="AvaloniaProjectInfoResolver.props" PackagePath="build;buildTransitive" />
+  </ItemGroup>
+
+  <Import Project="AvaloniaProjectInfoResolver.Inner.props" />
+  <Import Project="AvaloniaProjectInfoResolver.Inner.targets" />
 </Project>

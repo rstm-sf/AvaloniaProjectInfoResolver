@@ -20,4 +20,23 @@
              Targets="Publish" />
   </Target>
 
+  <Target Name="PackCoreDependecies">
+    <PropertyGroup>
+      <CoreDependeciesNetcorePath>..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\netcoreapp2.1\publish</CoreDependeciesNetcorePath>
+      <CoreDependeciesNetfxPath>..\AvaloniaProjectInfoResolver.PreviewTask\bin\$(Configuration)\net472\publish</CoreDependeciesNetfxPath>
+      <CoreDependeciesLoggerPath>..\AvaloniaProjectInfoResolver.MSBuildLogger\bin\$(Configuration)\netstandard2.0\publish</CoreDependeciesLoggerPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(CoreDependeciesNetcorePath)\*.targets;$(CoreDependeciesNetcorePath)\*.props;$(CoreDependeciesNetcorePath)\*.dll">
+        <PackagePath>coreDependecies\AvaloniaProjectInfoResolver.Core\netcore</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(CoreDependeciesNetfxPath)\*.targets;$(CoreDependeciesNetfxPath)\*.props;$(CoreDependeciesNetfxPath)\*.dll">
+        <PackagePath>coreDependecies\AvaloniaProjectInfoResolver.Core\netfx</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(CoreDependeciesLoggerPath)\*.dll">
+        <PackagePath>coreDependecies\AvaloniaProjectInfoResolver.Core</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+
 </Project>
