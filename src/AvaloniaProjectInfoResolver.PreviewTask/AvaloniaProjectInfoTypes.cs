@@ -87,8 +87,8 @@ namespace AvaloniaProjectInfoResolver
             if (wasEmpty)
                 return;
 
-            ProjectRuntimeConfigFilePath = reader.ReadElementString();
             ProjectDepsFilePath = reader.ReadElementString();
+            ProjectRuntimeConfigFilePath = reader.ReadElementString();
             TargetFramework = reader.ReadElementString();
             TargetFrameworkIdentifier = reader.ReadElementString();
             TargetPath = reader.ReadElementString();
