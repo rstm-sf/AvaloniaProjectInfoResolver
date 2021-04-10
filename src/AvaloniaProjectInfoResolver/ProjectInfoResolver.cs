@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -13,7 +14,8 @@ namespace AvaloniaProjectInfoResolver
         private static readonly string SelfDirectoryPath =
             Path.GetDirectoryName(typeof(ProjectInfoResolver).Assembly.Location)!;
 
-        public async Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(string projectFilePath)
+        public async Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(
+            string projectFilePath, CancellationToken? cancellationToken = null)
         {
             var receiverTask = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
             var receiverLogger = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -37,15 +39,24 @@ namespace AvaloniaProjectInfoResolver
                     " -p:AvaloniaProjectFilePath=",
                     projectFilePath)
             };
-            Process.Start(startInfo);
 
+            var proc = Process.Start(startInfo);
             receiverTask.DisposeLocalCopyOfClientHandle();
             receiverLogger.DisposeLocalCopyOfClientHandle();
+
+            if (cancellationToken?.IsCancellationRequested == true)
+            {
+                proc?.Kill();
+                return new AvaloniaProjectInfoResult(null, string.Empty);
+            }
+
+            cancellationToken?.Register(() => proc?.Kill());
 
             var info = await ResolvePreviewProjectInfoAsync(receiverTask).ConfigureAwait(false);
             var error = await ResolveLoggerProjectInfoAsync(receiverLogger).ConfigureAwait(false);
 
-            return new AvaloniaProjectInfoResult(info, error);
+            return new AvaloniaProjectInfoResult(
+                cancellationToken?.IsCancellationRequested == true ? null : info, error);
         }
 
         private static async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(AnonymousPipeServerStream receiver)

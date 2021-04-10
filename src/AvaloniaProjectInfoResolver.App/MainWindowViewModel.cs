@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AvaloniaProjectInfoResolver.App.Nodes;
 using DynamicData;
@@ -17,6 +18,8 @@ namespace AvaloniaProjectInfoResolver.App
 
         private string _errorMessage;
 
+        private bool _isVisibleOpenProject;
+
         public string ProjectFilePath
         {
             get => _projectFilePath;
@@ -29,11 +32,19 @@ namespace AvaloniaProjectInfoResolver.App
             private set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
         }
 
+        public bool IsVisibleOpenProject
+        {
+            get => _isVisibleOpenProject;
+            private set => this.RaiseAndSetIfChanged(ref _isVisibleOpenProject, value);
+        }
+
         public bool IsVisibleAvaloniaProjectProps => string.IsNullOrEmpty(ErrorMessage);
 
         public ObservableCollection<INode> AvaloniaProjectProps { get; }
 
         public ReactiveCommand<Unit, Unit> OpenProject { get; }
+
+        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
         public Interaction<Unit, string?> ShowOpenFileDialog { get; }
 
@@ -41,42 +52,59 @@ namespace AvaloniaProjectInfoResolver.App
         {
             _projectFilePath = string.Empty;
             _errorMessage = string.Empty;
+            _isVisibleOpenProject = true;
             AvaloniaProjectProps = new ObservableCollection<INode>();
-            OpenProject = ReactiveCommand.CreateFromTask(OpenFileAsync);
-            ShowOpenFileDialog = new Interaction<Unit, string?>();
 
-            this.WhenAnyValue(x => x.ProjectFilePath)
-                .Subscribe(async x => await UpdateTreeViewAsync(x));
+            OpenProject = ReactiveCommand.CreateFromObservable(
+                () => Observable
+                    .StartAsync(OpenFileAsync)
+                    .TakeUntil(CancelCommand!));
+            CancelCommand = ReactiveCommand.Create(() => { }, OpenProject.IsExecuting);
+
+            ShowOpenFileDialog = new Interaction<Unit, string?>();
 
             this.WhenAnyValue(x => x.ErrorMessage)
                 .Subscribe(_ => this.RaisePropertyChanged(nameof(IsVisibleAvaloniaProjectProps)));
         }
 
-        private async Task OpenFileAsync()
+        private async Task OpenFileAsync(CancellationToken cancellationToken)
         {
             var fileName = await ShowOpenFileDialog.Handle(Unit.Default);
             if (fileName is null)
                 return;
-            ProjectFilePath = fileName;
+            await UpdateTreeViewAsync(fileName, cancellationToken);
         }
 
-        private async Task UpdateTreeViewAsync(string fileName)
+        private async Task UpdateTreeViewAsync(string fileName, CancellationToken cancellationToken)
         {
-            AvaloniaProjectProps.Clear();
-
+            var prevFilePath = ProjectFilePath;
+            ProjectFilePath = fileName;
             if (string.IsNullOrEmpty(fileName))
                 return;
 
-            var (avaloniaProjectProps, errors) = await Task.Run(async () =>
-            {
-                var result = await ProjectInfoResolver.ResolvePreviewProjectInfoAsync(fileName);
-                var rootNode = result.HasError ? null : NodesHelper.SelectRootNode(result.ProjectInfo!);
-                return (rootNode, result.Error);
-            });
+            IsVisibleOpenProject = false;
+            var (avaloniaProjectProps, errors) = await Task.Run(
+                async () =>
+                {
+                    var result = await ProjectInfoResolver.ResolvePreviewProjectInfoAsync(
+                        fileName, cancellationToken);
+                    var rootNode = cancellationToken.IsCancellationRequested || result.HasError
+                        ? null
+                        : NodesHelper.SelectRootNode(result.ProjectInfo!);
+                    return (rootNode, result.Error);
+                },
+                cancellationToken);
+            IsVisibleOpenProject = true;
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                ProjectFilePath = prevFilePath;
+                return;
+            }
+
+            AvaloniaProjectProps.Clear();
             if (avaloniaProjectProps is not null)
                 AvaloniaProjectProps.AddRange(avaloniaProjectProps.Children);
-
             ErrorMessage = errors;
         }
     }
