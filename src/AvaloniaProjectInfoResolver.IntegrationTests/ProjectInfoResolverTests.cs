@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -5,13 +6,14 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
 {
     public class ProjectInfoResolverTests
     {
+        private const string AvaloniaAppProjPath = "../../../../../AvaloniaProjectInfoResolver.App/AvaloniaProjectInfoResolver.App.csproj";
+
         [Fact]
         public async Task Should_ResolvePreviewProjectInfoAsync_App_References_Avalonia()
         {
             var projectInfoResolver = new ProjectInfoResolver();
-            var projPath = "../../../../../AvaloniaProjectInfoResolver.App/AvaloniaProjectInfoResolver.App.csproj";
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(projPath);
+            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(AvaloniaAppProjPath);
 
             Assert.False(result.HasError);
             Assert.Equal(result.Error, string.Empty);
@@ -31,6 +33,20 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             Assert.Equal(".NETCoreApp", infoByTfm[0].TargetFrameworkIdentifier);
             Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectDepsFilePath));
             Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectRuntimeConfigFilePath));
+        }
+
+        [Fact]
+        public async Task Should_ResolvePreviewProjectInfoAsync_App_References_Avalonia_Cancellation()
+        {
+            var projectInfoResolver = new ProjectInfoResolver();
+            using var cancellationTokenSource = new CancellationTokenSource(100);
+
+            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(
+                AvaloniaAppProjPath, cancellationTokenSource.Token);
+
+            Assert.False(result.HasError);
+            Assert.Equal(result.Error, string.Empty);
+            Assert.Null(result.ProjectInfo);
         }
 
         [Fact]

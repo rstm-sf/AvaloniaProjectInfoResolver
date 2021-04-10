@@ -15,10 +15,16 @@
     <Grid ColumnDefinitions="Auto,1*"
           RowDefinitions="Auto,1*"
           Margin="4">
-        <Button Command="{Binding OpenProject}"
-                Content="Open Project"
-                Margin="4"
-                Grid.Row="0" Grid.Column="0" />
+        <DockPanel Grid.Row="0" Grid.Column="0" >
+            <Button Command="{Binding OpenProject}"
+                    Content="Open Project"
+                    Margin="4"
+                    IsVisible="{Binding IsVisibleOpenProject}"/>
+            <Button Command="{Binding CancelCommand}"
+                    Content="Cancel"
+                    Margin="4"
+                    IsVisible="{Binding !IsVisibleOpenProject}"/>
+        </DockPanel>
         <TextBox Text="{Binding ProjectFilePath}"
                  IsReadOnly="True"
                  AcceptsReturn="True"
