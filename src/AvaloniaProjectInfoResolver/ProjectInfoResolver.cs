@@ -15,7 +15,7 @@ namespace AvaloniaProjectInfoResolver
             Path.GetDirectoryName(typeof(ProjectInfoResolver).Assembly.Location)!;
 
         public async Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(
-            string projectFilePath, CancellationToken? cancellationToken = null)
+            string projectFilePath, CancellationToken cancellationToken = default)
         {
             var receiverTask = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
             var receiverLogger = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -44,19 +44,20 @@ namespace AvaloniaProjectInfoResolver
             receiverTask.DisposeLocalCopyOfClientHandle();
             receiverLogger.DisposeLocalCopyOfClientHandle();
 
-            if (cancellationToken?.IsCancellationRequested == true)
+            if (cancellationToken.IsCancellationRequested)
             {
                 proc?.Kill();
                 return new AvaloniaProjectInfoResult(null, string.Empty);
             }
 
-            cancellationToken?.Register(() => proc?.Kill());
+            cancellationToken.Register(() => proc?.Kill());
 
             var info = await ResolvePreviewProjectInfoAsync(receiverTask).ConfigureAwait(false);
             var error = await ResolveLoggerProjectInfoAsync(receiverLogger).ConfigureAwait(false);
 
             return new AvaloniaProjectInfoResult(
-                cancellationToken?.IsCancellationRequested == true ? null : info, error);
+                cancellationToken.IsCancellationRequested ? null : info,
+                error);
         }
 
         private static async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(AnonymousPipeServerStream receiver)

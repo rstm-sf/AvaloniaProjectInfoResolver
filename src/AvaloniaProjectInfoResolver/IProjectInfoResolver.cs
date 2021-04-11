@@ -6,6 +6,6 @@ namespace AvaloniaProjectInfoResolver
     public interface IProjectInfoResolver
     {
         Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(
-            string projectFilePath, CancellationToken? cancellationToken = null);
+            string projectFilePath, CancellationToken cancellationToken = default);
     }
 }
