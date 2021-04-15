@@ -94,5 +94,5 @@ jobs:
           dotnet-version: 5.0.201
 
       - name: Push nuget
-        if: ${{ env.release-draft == false }}
+        if: ${{ env.release-draft == 'false' }}
         run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_TOKEN }}
