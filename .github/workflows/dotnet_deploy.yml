@@ -1,16 +1,17 @@
-name: 'Tests'
+name: 'Deploy'
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: 1
   configuration: Release
+  zip-name: artifact-nuget
 
 jobs:
   build:
@@ -46,3 +47,16 @@ jobs:
     - name: Run tests
       working-directory: src/AvaloniaProjectInfoResolver.IntegrationTests
       run: dotnet test -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }} --no-build
+
+    - name: Pack nugets
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '5.0.201' }}
+      run: dotnet pack -c ${{ env.configuration }} --no-build
+
+    - name: Upload artifact
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '5.0.201' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.zip-name }}
+        path: |
+          ./src/AvaloniaProjectInfoResolver/bin/${{ env.configuration }}/*.nupkg
+          ./src/AvaloniaProjectInfoResolver/bin/${{ env.configuration }}/*.snupkg
