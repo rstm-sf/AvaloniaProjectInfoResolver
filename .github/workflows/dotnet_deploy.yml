@@ -12,6 +12,7 @@ env:
   DOTNET_NOLOGO: 1
   configuration: Release
   zip-name: artifact-nuget
+  release-draft: false
 
 jobs:
   build:
@@ -83,6 +84,15 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.vars.outputs.version }}
-          draft: true
+          draft: ${{ env.release-draft }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.201
+
+      - name: Push nuget
+        if: ${{ env.release-draft == false }}
+        run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_TOKEN }}
