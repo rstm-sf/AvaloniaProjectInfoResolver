@@ -82,9 +82,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            *.nupkg
-            *.snupkg
           tag_name: v${{ steps.vars.outputs.version }}
           draft: true
         env:
