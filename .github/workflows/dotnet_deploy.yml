@@ -60,3 +60,32 @@ jobs:
         path: |
           ./src/AvaloniaProjectInfoResolver/bin/${{ env.configuration }}/*.nupkg
           ./src/AvaloniaProjectInfoResolver/bin/${{ env.configuration }}/*.snupkg
+
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [build]
+    steps:
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.zip-name }}
+
+      - name: Variables
+        id: vars
+        shell: pwsh
+        run: |
+          $fileName = Split-Path -Path "*.nupkg" -LeafBase -Resolve
+          Write-Output "::set-output name=version::$($filename.Substring("AvaloniaProjectInfoResolver.".Length))"
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.nupkg
+            *.snupkg
+          tag_name: v${{ steps.vars.outputs.version }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
