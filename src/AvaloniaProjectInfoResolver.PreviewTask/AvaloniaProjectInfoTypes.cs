@@ -18,8 +18,6 @@ namespace AvaloniaProjectInfoResolver
 
         public string AvaloniaXaml { get; internal set; } = string.Empty;
 
-        public string TargetFrameworks { get; internal set; } = string.Empty;
-
         public ProjectInfoByTfm[] ProjectInfoByTfmArray { get; internal set; } = new ProjectInfoByTfm[0];
 
         public XmlSchema? GetSchema() => null;
@@ -35,7 +33,6 @@ namespace AvaloniaProjectInfoResolver
             AvaloniaPreviewerNetFullToolPath = reader.ReadElementString();
             AvaloniaResource = reader.ReadElementString();
             AvaloniaXaml = reader.ReadElementString();
-            TargetFrameworks = reader.ReadElementString();
 
             reader.ReadStartElement(nameof(ProjectInfoByTfmArray));
 
@@ -57,7 +54,6 @@ namespace AvaloniaProjectInfoResolver
             writer.WriteElementString(nameof(AvaloniaPreviewerNetFullToolPath), AvaloniaPreviewerNetFullToolPath);
             writer.WriteElementString(nameof(AvaloniaResource), AvaloniaResource);
             writer.WriteElementString(nameof(AvaloniaXaml), AvaloniaXaml);
-            writer.WriteElementString(nameof(TargetFrameworks), TargetFrameworks);
 
             writer.WriteStartElement(nameof(ProjectInfoByTfmArray));
             foreach (var projectInfoByTfm in ProjectInfoByTfmArray)

@@ -156,7 +156,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!isSuccess)
                 return false;
 
-            projectInfo = SelectProjectInfoCommon(targetOutputs, targetFrameworks);
+            projectInfo = SelectProjectInfoCommon(targetOutputs);
 
             return true;
         }
@@ -198,7 +198,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         }
 
         // ReSharper disable once InconsistentNaming
-        private static ProjectInfo SelectProjectInfoCommon(Dictionary<string, ITaskItem[]> targetOutputs, string[] tfms) =>
+        private static ProjectInfo SelectProjectInfoCommon(Dictionary<string, ITaskItem[]> targetOutputs) =>
             new()
             {
                 AvaloniaPreviewerNetCoreToolPath = targetOutputs
@@ -207,7 +207,6 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                     .ResultFromSingle(SelectInfoAvaloniaPreviewerNetFullToolPath),
                 AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
                 AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
-                TargetFrameworks = string.Join(";", tfms),
             };
 
         // ReSharper disable once InconsistentNaming
