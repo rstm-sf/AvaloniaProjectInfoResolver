@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AvaloniaVersion>0.10.0</AvaloniaVersion>
+    <AvaloniaVersion>0.10.2</AvaloniaVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
