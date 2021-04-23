@@ -18,7 +18,7 @@ namespace AvaloniaProjectInfoResolver.App
             this.AttachDevTools();
 #endif
             this.WhenActivated(d => d(
-                ViewModel.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog)));
+                ViewModel!.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog)));
         }
 
         private void InitializeComponent()
