@@ -14,6 +14,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
     public class PreviewInfoResolverTask : ContextAwareTask
     {
         // ReSharper disable InconsistentNaming
+        private const string SelectInfoProjectReference = nameof(SelectInfoProjectReference);
+        private const string SelectInfoProjectPath = nameof(SelectInfoProjectPath);
         private const string SelectInfoAvaloniaResource = nameof(SelectInfoAvaloniaResource);
         private const string SelectInfoAvaloniaXaml = nameof(SelectInfoAvaloniaXaml);
         private const string SelectInfoAvaloniaPreviewerNetCoreToolPath =
@@ -31,6 +33,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         private static readonly string[] TargetNamesCommon =
         {
             "Restore",
+            SelectInfoProjectPath,
             SelectInfoAvaloniaResource,
             SelectInfoAvaloniaXaml,
             SelectInfoAvaloniaPreviewerNetCoreToolPath,
@@ -45,6 +48,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             SelectInfoTargetFramework,
             SelectInfoTargetFrameworkIdentifier,
         };
+
+        private static readonly string[] TargetGetProjectReference = {SelectInfoProjectReference};
 
         private static readonly string[] TargetGetTfms = {SelectInfoTargetFrameworks};
 
@@ -89,9 +94,6 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
             isSuccess = TryResolvePreviewInfoCommon(out var previewInfo, targetFrameworks);
             if (!isSuccess)
-                return false;
-
-            if (!IsReferencesAvalonia(previewInfo))
                 return false;
 
             var appExecInfoCollection = new List<AppExecInfo>(targetFrameworks.Length);
@@ -156,6 +158,54 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 return false;
 
             previewInfo = SelectPreviewInfoCommon(targetOutputs);
+            if (!IsReferencesAvalonia(previewInfo))
+            {
+                previewInfo = default!;
+                return false;
+            }
+
+            isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetGetProjectReference, props, targetOutputs);
+            if (isSuccess)
+            {
+                var currentProjectDirectory = Directory.GetParent(previewInfo.XamlFileInfo.ProjectPath).FullName;
+
+                var projectReferenceCollection = targetOutputs.ResultFromArray(SelectInfoProjectReference);
+                var xamlFileInfoCollection = new List<XamlFileInfo>(projectReferenceCollection.Length);
+                foreach (var project in projectReferenceCollection)
+                {
+                    var path = Path.Combine(currentProjectDirectory, project);
+                    isSuccess = TryResolvePreviewInfoCommonProjectReference(path, out var xamlFileInfo);
+                    if (isSuccess)
+                        xamlFileInfoCollection.Add(xamlFileInfo);
+                }
+
+                previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
+            }
+
+            return true;
+        }
+
+        private bool TryResolvePreviewInfoCommonProjectReference(string projectReference, out XamlFileInfo xamlFileInfo)
+        {
+            xamlFileInfo = default!;
+
+            var isSuccess = TryResolvePreviewInfoTfms(out var targetFrameworks);
+            if (!isSuccess)
+                return false;
+
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var props = GetGlobalProperties(targetFrameworks[0]);
+
+            isSuccess = BuildEngine.BuildProjectFile(projectReference, TargetNamesCommon, props, targetOutputs);
+            if (!isSuccess)
+                return false;
+
+            xamlFileInfo = new XamlFileInfo
+            {
+                ProjectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath),
+                AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
+                AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
+            };
 
             return true;
         }
@@ -206,11 +256,13 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                     .ResultFromSingle(SelectInfoAvaloniaPreviewerNetFullToolPath),
                 XamlFileInfo =
                 {
+                    ProjectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath),
                     AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
                     AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
                 }
             };
 
+        // ReSharper disable once InconsistentNaming
         private static AppExecInfo SelectAppExecInfo(Dictionary<string, ITaskItem[]> targetOutputs) =>
             new()
             {

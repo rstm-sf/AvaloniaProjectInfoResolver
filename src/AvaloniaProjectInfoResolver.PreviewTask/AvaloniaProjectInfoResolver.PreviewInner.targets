@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <Target Name="SelectInfoProjectReference" Returns="@(ProjectReference)" />
+  <Target Name="SelectInfoProjectPath" Returns="$(ProjectPath)" />
+
   <Target Name="SelectInfoAvaloniaResource" Returns="@(AvaloniaResource)" />
   <Target Name="SelectInfoAvaloniaXaml" Returns="@(AvaloniaXaml)" />
 

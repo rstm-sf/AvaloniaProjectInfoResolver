@@ -65,9 +65,15 @@ namespace AvaloniaProjectInfoResolver
 
     public class XamlFileInfo : IXmlSerializable
     {
+        private static readonly XmlSerializer SerializerForXamlFileInfo = new(typeof(XamlFileInfo));
+
+        public string ProjectPath { get; internal set; } = string.Empty;
+
         public string AvaloniaResource { get; internal set; } = string.Empty;
 
         public string AvaloniaXaml { get; internal set; } = string.Empty;
+
+        public IReadOnlyList<XamlFileInfo> ReferenceXamlFileInfoCollection { get; internal set; } = new XamlFileInfo[0];
 
         public XmlSchema? GetSchema() => null;
 
@@ -78,14 +84,33 @@ namespace AvaloniaProjectInfoResolver
             if (wasEmpty)
                 return;
 
+            ProjectPath = reader.ReadElementString();
             AvaloniaResource = reader.ReadElementString();
             AvaloniaXaml = reader.ReadElementString();
+
+            reader.ReadStartElement(nameof(ReferenceXamlFileInfoCollection));
+
+            var result = new List<XamlFileInfo>();
+            while (SerializerForXamlFileInfo.CanDeserialize(reader))
+            {
+                var info = (XamlFileInfo)SerializerForXamlFileInfo.Deserialize(reader);
+                result.Add(info);
+            }
+            ReferenceXamlFileInfoCollection = result;
+
+            reader.ReadEndElement();
         }
 
         public void WriteXml(XmlWriter writer)
         {
+            writer.WriteElementString(nameof(ProjectPath), ProjectPath);
             writer.WriteElementString(nameof(AvaloniaResource), AvaloniaResource);
             writer.WriteElementString(nameof(AvaloniaXaml), AvaloniaXaml);
+
+            writer.WriteStartElement(nameof(ReferenceXamlFileInfoCollection));
+            foreach (var xamlFileInfo in ReferenceXamlFileInfoCollection)
+                SerializerForXamlFileInfo.Serialize(writer, xamlFileInfo);
+            writer.WriteEndElement();
         }
     }
 

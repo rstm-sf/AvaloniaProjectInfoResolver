@@ -1,6 +1,6 @@
 ﻿<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Debug PreviewTask [Win]" type="RunExe" factoryName=".NET Executable">
-    <option name="EXE_PATH" value="C:/Program Files/dotnet/sdk/5.0.201/MSBuild.dll" />
+    <option name="EXE_PATH" value="C:/Program Files/dotnet/sdk/5.0.202/MSBuild.dll" />
     <option name="PROGRAM_PARAMETERS" value="-t:Rebuild" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/AvaloniaProjectInfoResolver.PreviewTask.Debug" />
     <option name="PASS_PARENT_ENVS" value="1" />
