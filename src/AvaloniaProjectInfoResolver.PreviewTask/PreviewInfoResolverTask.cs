@@ -164,25 +164,38 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 return false;
             }
 
-            isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetGetProjectReference, props, targetOutputs);
+            var xamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
+                previewInfo.XamlFileInfo.ProjectPath, props);
+            previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
+
+            return true;
+        }
+
+        private List<XamlFileInfo> ResolveReferenceXamlFileInfoCollection(
+            string parentProjectPath, Dictionary<string, string> props)
+        {
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var xamlFileInfoCollection = new List<XamlFileInfo>();
+            var isSuccess = BuildEngine.BuildProjectFile(
+                parentProjectPath, TargetGetProjectReference, props, targetOutputs);
             if (isSuccess)
             {
-                var currentProjectDirectory = Directory.GetParent(previewInfo.XamlFileInfo.ProjectPath).FullName;
+                var currentProjectDirectory = Directory.GetParent(parentProjectPath)!.FullName;
 
                 var projectReferenceCollection = targetOutputs.ResultFromArray(SelectInfoProjectReference);
-                var xamlFileInfoCollection = new List<XamlFileInfo>(projectReferenceCollection.Length);
                 foreach (var project in projectReferenceCollection)
                 {
+                    if (string.IsNullOrEmpty(project))
+                        continue;
+
                     var path = Path.Combine(currentProjectDirectory, project);
                     isSuccess = TryResolvePreviewInfoCommonProjectReference(path, out var xamlFileInfo);
                     if (isSuccess)
                         xamlFileInfoCollection.Add(xamlFileInfo);
                 }
-
-                previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
             }
 
-            return true;
+            return xamlFileInfoCollection;
         }
 
         private bool TryResolvePreviewInfoCommonProjectReference(string projectReference, out XamlFileInfo xamlFileInfo)
@@ -200,12 +213,20 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!isSuccess)
                 return false;
 
+            var projectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath);
+            // The project can be build, but in reality it cannot
+            if (string.IsNullOrEmpty(projectPath))
+                return false;
+
             xamlFileInfo = new XamlFileInfo
             {
-                ProjectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath),
+                ProjectPath = projectPath,
                 AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
                 AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
             };
+
+            xamlFileInfo.ReferenceXamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
+                xamlFileInfo.ProjectPath, props);
 
             return true;
         }
