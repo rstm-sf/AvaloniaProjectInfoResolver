@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 
 namespace AvaloniaProjectInfoResolver.App.Nodes
 {
@@ -20,6 +19,16 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
                 NodesHelper.GetProperties(typeof(ProjectInfoByTfm))
                     .Select(x =>
                         new PropertyNode(this, x.Name, (string)x.GetValue(projectInfoByTfm, null)!)));
+        }
+
+        public PropertyCollectionNode(RootNode parent, XamlFileInfo xamlFileInfo)
+        {
+            Parent = parent;
+            Header = nameof(XamlFileInfo);
+            Children = new ObservableCollection<INode>(
+                NodesHelper.GetProperties(typeof(XamlFileInfo))
+                    .Select(x =>
+                        new PropertyNode(this, x.Name, (string)x.GetValue(xamlFileInfo, null)!)));
         }
     }
 }

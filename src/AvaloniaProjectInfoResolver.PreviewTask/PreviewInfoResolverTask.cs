@@ -205,8 +205,11 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                     .ResultFromSingle(SelectInfoAvaloniaPreviewerNetCoreToolPath),
                 AvaloniaPreviewerNetFullToolPath = targetOutputs
                     .ResultFromSingle(SelectInfoAvaloniaPreviewerNetFullToolPath),
-                AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
-                AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
+                XamlFileInfo =
+                {
+                    AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
+                    AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
+                }
             };
 
         // ReSharper disable once InconsistentNaming

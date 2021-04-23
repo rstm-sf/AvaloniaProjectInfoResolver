@@ -11,18 +11,29 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
             var rootNode = new RootNode();
             foreach (var property in GetProperties(typeof(ProjectInfo)))
             {
-                if (property.Name == nameof(ProjectInfo.ProjectInfoByTfmArray))
+                switch (property.Name)
                 {
-                    foreach (var info in projectInfo.ProjectInfoByTfmArray)
+                    case nameof(ProjectInfo.ProjectInfoByTfmArray):
                     {
-                        var node = new PropertyCollectionNode(rootNode, info);
-                        rootNode.Children.Add(node);
+                        foreach (var info in projectInfo.ProjectInfoByTfmArray)
+                        {
+                            var node = new PropertyCollectionNode(rootNode, info);
+                            rootNode.Children.Add(node);
+                        }
+                        break;
                     }
-                }
-                else
-                {
-                    var node = new PropertyNode(rootNode, property.Name, (string)property.GetValue(projectInfo, null)!);
-                    rootNode.Children.Add(node);
+                    case nameof(ProjectInfo.XamlFileInfo):
+                    {
+                        var node = new PropertyCollectionNode(rootNode, projectInfo.XamlFileInfo);
+                        rootNode.Children.Add(node);
+                        break;
+                    }
+                    default:
+                    {
+                        var node = new PropertyNode(rootNode, property.Name, (string)property.GetValue(projectInfo, null)!);
+                        rootNode.Children.Add(node);
+                        break;
+                    }
                 }
             }
 

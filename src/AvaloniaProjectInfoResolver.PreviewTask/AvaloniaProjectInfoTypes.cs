@@ -8,17 +8,18 @@ namespace AvaloniaProjectInfoResolver
 {
     public class ProjectInfo : IXmlSerializable
     {
+        private static readonly XmlSerializer SerializerForXamlFileInfo
+            = new(typeof(XamlFileInfo), new XmlRootAttribute(nameof(XamlFileInfo)));
+
         private static readonly XmlSerializer SerializerForTfm = new(typeof(ProjectInfoByTfm));
 
         public string AvaloniaPreviewerNetCoreToolPath { get; internal set; } = string.Empty;
 
         public string AvaloniaPreviewerNetFullToolPath { get; internal set; } = string.Empty;
 
-        public string AvaloniaResource { get; internal set; } = string.Empty;
-
-        public string AvaloniaXaml { get; internal set; } = string.Empty;
-
         public ProjectInfoByTfm[] ProjectInfoByTfmArray { get; internal set; } = new ProjectInfoByTfm[0];
+
+        public XamlFileInfo XamlFileInfo { get; internal set; } = new();
 
         public XmlSchema? GetSchema() => null;
 
@@ -31,8 +32,6 @@ namespace AvaloniaProjectInfoResolver
 
             AvaloniaPreviewerNetCoreToolPath = reader.ReadElementString();
             AvaloniaPreviewerNetFullToolPath = reader.ReadElementString();
-            AvaloniaResource = reader.ReadElementString();
-            AvaloniaXaml = reader.ReadElementString();
 
             reader.ReadStartElement(nameof(ProjectInfoByTfmArray));
 
@@ -46,19 +45,48 @@ namespace AvaloniaProjectInfoResolver
             ProjectInfoByTfmArray = result.ToArray();
 
             reader.ReadEndElement();
+            reader.Read();
+
+            XamlFileInfo = (XamlFileInfo)SerializerForXamlFileInfo.Deserialize(reader);
         }
 
         public void WriteXml(XmlWriter writer)
         {
             writer.WriteElementString(nameof(AvaloniaPreviewerNetCoreToolPath), AvaloniaPreviewerNetCoreToolPath);
             writer.WriteElementString(nameof(AvaloniaPreviewerNetFullToolPath), AvaloniaPreviewerNetFullToolPath);
-            writer.WriteElementString(nameof(AvaloniaResource), AvaloniaResource);
-            writer.WriteElementString(nameof(AvaloniaXaml), AvaloniaXaml);
 
             writer.WriteStartElement(nameof(ProjectInfoByTfmArray));
             foreach (var projectInfoByTfm in ProjectInfoByTfmArray)
                 SerializerForTfm.Serialize(writer, projectInfoByTfm);
             writer.WriteEndElement();
+
+            SerializerForXamlFileInfo.Serialize(writer, XamlFileInfo);
+        }
+    }
+
+    public class XamlFileInfo : IXmlSerializable
+    {
+        public string AvaloniaResource { get; internal set; } = string.Empty;
+
+        public string AvaloniaXaml { get; internal set; } = string.Empty;
+
+        public XmlSchema? GetSchema() => null;
+
+        public void ReadXml(XmlReader reader)
+        {
+            var wasEmpty = reader.IsEmptyElement;
+            reader.Read();
+            if (wasEmpty)
+                return;
+
+            AvaloniaResource = reader.ReadElementString();
+            AvaloniaXaml = reader.ReadElementString();
+        }
+
+        public void WriteXml(XmlWriter writer)
+        {
+            writer.WriteElementString(nameof(AvaloniaResource), AvaloniaResource);
+            writer.WriteElementString(nameof(AvaloniaXaml), AvaloniaXaml);
         }
     }
 

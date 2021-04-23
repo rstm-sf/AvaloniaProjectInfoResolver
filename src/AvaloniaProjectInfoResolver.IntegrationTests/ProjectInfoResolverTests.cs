@@ -22,8 +22,8 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             Assert.NotNull(info);
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetCoreToolPath));
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetFullToolPath));
-            Assert.Equal(string.Empty, info.AvaloniaResource);
-            Assert.False(string.IsNullOrEmpty(info.AvaloniaXaml));
+            Assert.Equal(string.Empty, info.XamlFileInfo.AvaloniaResource);
+            Assert.False(string.IsNullOrEmpty(info.XamlFileInfo.AvaloniaXaml));
 
             var infoByTfm = info.ProjectInfoByTfmArray;
             Assert.Single(infoByTfm);
