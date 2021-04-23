@@ -15,7 +15,7 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
         public PropertyCollectionNode(RootNode parent, IReadOnlyList<AppExecInfo> appExecInfoCollection)
         {
             Parent = parent;
-            Header = nameof(ProjectInfo.AppExecInfoCollection);
+            Header = nameof(PreviewInfo.AppExecInfoCollection);
             Children = new ObservableCollection<INode>();
             foreach (var info in appExecInfoCollection)
             {
@@ -27,7 +27,7 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
         public PropertyCollectionNode(RootNode parent, XamlFileInfo xamlFileInfo)
         {
             Parent = parent;
-            Header = nameof(ProjectInfo.XamlFileInfo);
+            Header = nameof(PreviewInfo.XamlFileInfo);
             Children = new ObservableCollection<INode>(
                 NodesHelper.GetProperties(typeof(XamlFileInfo))
                     .Select(x =>

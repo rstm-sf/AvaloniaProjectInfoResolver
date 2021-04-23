@@ -6,7 +6,7 @@ using System.Xml.Serialization;
 // ReSharper disable once CheckNamespace
 namespace AvaloniaProjectInfoResolver
 {
-    public class ProjectInfo : IXmlSerializable
+    public class PreviewInfo : IXmlSerializable
     {
         private static readonly XmlSerializer SerializerForXamlFileInfo
             = new(typeof(XamlFileInfo), new XmlRootAttribute(nameof(XamlFileInfo)));

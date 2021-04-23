@@ -83,15 +83,15 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
         protected override bool ExecuteInner()
         {
-            var isSuccess = TryResolveProjectInfoTfms(out var targetFrameworks);
+            var isSuccess = TryResolvePreviewInfoTfms(out var targetFrameworks);
             if (!isSuccess)
                 return false;
 
-            isSuccess = TryResolveProjectInfoCommon(out var projectInfo, targetFrameworks);
+            isSuccess = TryResolvePreviewInfoCommon(out var previewInfo, targetFrameworks);
             if (!isSuccess)
                 return false;
 
-            if (!IsReferencesAvalonia(projectInfo))
+            if (!IsReferencesAvalonia(previewInfo))
                 return false;
 
             var appExecInfoCollection = new List<AppExecInfo>(targetFrameworks.Length);
@@ -102,16 +102,16 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                     return false;
                 appExecInfoCollection.Add(appExecInfo);
             }
-            projectInfo.AppExecInfoCollection = appExecInfoCollection;
+            previewInfo.AppExecInfoCollection = appExecInfoCollection;
 
-            SendMessage(projectInfo);
+            SendMessage(previewInfo);
             return true;
         }
 
-        private bool IsReferencesAvalonia(ProjectInfo projectInfo)
+        private bool IsReferencesAvalonia(PreviewInfo previewInfo)
         {
-            var isPreviewContains = !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetCoreToolPath)
-                                 || !string.IsNullOrEmpty(projectInfo.AvaloniaPreviewerNetFullToolPath);
+            var isPreviewContains = !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetCoreToolPath)
+                                 || !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetFullToolPath);
             if (isPreviewContains)
                 return true;
 
@@ -130,7 +130,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return false;
         }
 
-        private bool TryResolveProjectInfoTfms(out string[] targetFrameworks)
+        private bool TryResolvePreviewInfoTfms(out string[] targetFrameworks)
         {
             targetFrameworks = default!;
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
@@ -145,9 +145,9 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return true;
         }
 
-        private bool TryResolveProjectInfoCommon(out ProjectInfo projectInfo, string[] targetFrameworks)
+        private bool TryResolvePreviewInfoCommon(out PreviewInfo previewInfo, string[] targetFrameworks)
         {
-            projectInfo = default!;
+            previewInfo = default!;
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
             var props = GetGlobalProperties(targetFrameworks[0]);
 
@@ -155,7 +155,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!isSuccess)
                 return false;
 
-            projectInfo = SelectProjectInfoCommon(targetOutputs);
+            previewInfo = SelectPreviewInfoCommon(targetOutputs);
 
             return true;
         }
@@ -170,7 +170,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!isSuccess)
                 return false;
 
-            appExecInfo = SelectProjectInfoByTfm(targetOutputs);
+            appExecInfo = SelectAppExecInfo(targetOutputs);
 
             return true;
         }
@@ -180,9 +180,9 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 ? _globalPropertiesCommon
                 : new Dictionary<string, string>(_globalPropertiesCommon) {{"TargetFramework", targetFramework}};
 
-        private void SendMessage(ProjectInfo projectInfo)
+        private void SendMessage(PreviewInfo previewInfo)
         {
-            var message = SerializeToXml(projectInfo);
+            var message = SerializeToXml(previewInfo);
             if (string.IsNullOrWhiteSpace(ParentId))
             {
                 Log.LogMessage(MessageImportance.High, message);
@@ -197,7 +197,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         }
 
         // ReSharper disable once InconsistentNaming
-        private static ProjectInfo SelectProjectInfoCommon(Dictionary<string, ITaskItem[]> targetOutputs) =>
+        private static PreviewInfo SelectPreviewInfoCommon(Dictionary<string, ITaskItem[]> targetOutputs) =>
             new()
             {
                 AvaloniaPreviewerNetCoreToolPath = targetOutputs
@@ -211,8 +211,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 }
             };
 
-        // ReSharper disable once InconsistentNaming
-        private static AppExecInfo SelectProjectInfoByTfm(Dictionary<string, ITaskItem[]> targetOutputs) =>
+        private static AppExecInfo SelectAppExecInfo(Dictionary<string, ITaskItem[]> targetOutputs) =>
             new()
             {
                 TargetFramework = targetOutputs.ResultFromSingle(SelectInfoTargetFramework),
@@ -222,7 +221,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 ProjectRuntimeConfigFilePath = targetOutputs.ResultFromSingle(SelectInfoProjectRuntimeConfigFilePath),
             };
 
-        private static string SerializeToXml(ProjectInfo data)
+        private static string SerializeToXml(PreviewInfo data)
         {
             using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
 

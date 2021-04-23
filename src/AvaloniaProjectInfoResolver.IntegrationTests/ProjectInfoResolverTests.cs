@@ -13,12 +13,12 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
         {
             var projectInfoResolver = new ProjectInfoResolver();
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(AvaloniaAppProjPath);
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(AvaloniaAppProjPath);
 
             Assert.False(result.HasError);
             Assert.Equal(result.Error, string.Empty);
 
-            var info = result.ProjectInfo!;
+            var info = result.PreviewInfo!;
             Assert.NotNull(info);
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetCoreToolPath));
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetFullToolPath));
@@ -40,12 +40,12 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             var projectInfoResolver = new ProjectInfoResolver();
             using var cancellationTokenSource = new CancellationTokenSource(100);
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(
                 AvaloniaAppProjPath, cancellationTokenSource.Token);
 
             Assert.False(result.HasError);
             Assert.Equal(result.Error, string.Empty);
-            Assert.Null(result.ProjectInfo);
+            Assert.Null(result.PreviewInfo);
         }
 
         [Fact]
@@ -54,11 +54,11 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             var projectInfoResolver = new ProjectInfoResolver();
             var projPath = "../../../../../AvaloniaProjectInfoResolver/AvaloniaProjectInfoResolver.csproj";
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(projPath);
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(projPath);
 
             Assert.True(result.HasError);
             Assert.Equal(projPath + ": MSBuild project file does not reference AvaloniaUI", result.Error);
-            Assert.Null(result.ProjectInfo);
+            Assert.Null(result.PreviewInfo);
         }
     }
 }
