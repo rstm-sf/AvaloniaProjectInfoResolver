@@ -11,13 +11,13 @@ namespace AvaloniaProjectInfoResolver
         private static readonly XmlSerializer SerializerForXamlFileInfo
             = new(typeof(XamlFileInfo), new XmlRootAttribute(nameof(XamlFileInfo)));
 
-        private static readonly XmlSerializer SerializerForTfm = new(typeof(ProjectInfoByTfm));
+        private static readonly XmlSerializer SerializerForAppExecInfo = new(typeof(AppExecInfo));
 
         public string AvaloniaPreviewerNetCoreToolPath { get; internal set; } = string.Empty;
 
         public string AvaloniaPreviewerNetFullToolPath { get; internal set; } = string.Empty;
 
-        public ProjectInfoByTfm[] ProjectInfoByTfmArray { get; internal set; } = new ProjectInfoByTfm[0];
+        public IReadOnlyList<AppExecInfo> AppExecInfoCollection { get; internal set; } = new AppExecInfo[0];
 
         public XamlFileInfo XamlFileInfo { get; internal set; } = new();
 
@@ -33,16 +33,15 @@ namespace AvaloniaProjectInfoResolver
             AvaloniaPreviewerNetCoreToolPath = reader.ReadElementString();
             AvaloniaPreviewerNetFullToolPath = reader.ReadElementString();
 
-            reader.ReadStartElement(nameof(ProjectInfoByTfmArray));
+            reader.ReadStartElement(nameof(AppExecInfoCollection));
 
-            var result = new List<ProjectInfoByTfm>();
-            while (SerializerForTfm.CanDeserialize(reader))
+            var result = new List<AppExecInfo>();
+            while (SerializerForAppExecInfo.CanDeserialize(reader))
             {
-                var info = (ProjectInfoByTfm)SerializerForTfm.Deserialize(reader);
+                var info = (AppExecInfo)SerializerForAppExecInfo.Deserialize(reader);
                 result.Add(info);
             }
-
-            ProjectInfoByTfmArray = result.ToArray();
+            AppExecInfoCollection = result;
 
             reader.ReadEndElement();
             reader.Read();
@@ -55,9 +54,9 @@ namespace AvaloniaProjectInfoResolver
             writer.WriteElementString(nameof(AvaloniaPreviewerNetCoreToolPath), AvaloniaPreviewerNetCoreToolPath);
             writer.WriteElementString(nameof(AvaloniaPreviewerNetFullToolPath), AvaloniaPreviewerNetFullToolPath);
 
-            writer.WriteStartElement(nameof(ProjectInfoByTfmArray));
-            foreach (var projectInfoByTfm in ProjectInfoByTfmArray)
-                SerializerForTfm.Serialize(writer, projectInfoByTfm);
+            writer.WriteStartElement(nameof(AppExecInfoCollection));
+            foreach (var projectInfoByTfm in AppExecInfoCollection)
+                SerializerForAppExecInfo.Serialize(writer, projectInfoByTfm);
             writer.WriteEndElement();
 
             SerializerForXamlFileInfo.Serialize(writer, XamlFileInfo);
@@ -90,7 +89,7 @@ namespace AvaloniaProjectInfoResolver
         }
     }
 
-    public class ProjectInfoByTfm : IXmlSerializable
+    public class AppExecInfo : IXmlSerializable
     {
         public string ProjectDepsFilePath { get; internal set; } = string.Empty;
 

@@ -25,13 +25,13 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             Assert.Equal(string.Empty, info.XamlFileInfo.AvaloniaResource);
             Assert.False(string.IsNullOrEmpty(info.XamlFileInfo.AvaloniaXaml));
 
-            var infoByTfm = info.ProjectInfoByTfmArray;
-            Assert.Single(infoByTfm);
-            Assert.Equal("netcoreapp3.1", infoByTfm[0].TargetFramework);
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].TargetPath));
-            Assert.Equal(".NETCoreApp", infoByTfm[0].TargetFrameworkIdentifier);
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectDepsFilePath));
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectRuntimeConfigFilePath));
+            var appExecInfoCollection = info.AppExecInfoCollection;
+            Assert.Single(appExecInfoCollection);
+            Assert.Equal("netcoreapp3.1", appExecInfoCollection[0].TargetFramework);
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].TargetPath));
+            Assert.Equal(".NETCoreApp", appExecInfoCollection[0].TargetFrameworkIdentifier);
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].ProjectDepsFilePath));
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].ProjectRuntimeConfigFilePath));
         }
 
         [Fact]

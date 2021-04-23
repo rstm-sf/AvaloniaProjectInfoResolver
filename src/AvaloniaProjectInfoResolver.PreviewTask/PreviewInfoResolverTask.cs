@@ -37,7 +37,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             SelectInfoAvaloniaPreviewerNetFullToolPath,
         };
 
-        private static readonly string[] TargetNamesByTfm =
+        private static readonly string[] TargetNamesAppExecInfo =
         {
             SelectInfoTargetPath,
             SelectInfoProjectRuntimeConfigFilePath,
@@ -94,16 +94,15 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!IsReferencesAvalonia(projectInfo))
                 return false;
 
-            var projectInfoTfmCollection = new List<ProjectInfoByTfm>(targetFrameworks.Length);
+            var appExecInfoCollection = new List<AppExecInfo>(targetFrameworks.Length);
             foreach (var tfm in targetFrameworks)
             {
-                isSuccess = TryResolveProjectInfoByTfm(out var projectInfoTfm, tfm);
+                isSuccess = TryResolveAppExecInfo(out var appExecInfo, tfm);
                 if (!isSuccess)
                     return false;
-                projectInfoTfmCollection.Add(projectInfoTfm);
+                appExecInfoCollection.Add(appExecInfo);
             }
-
-            projectInfo.ProjectInfoByTfmArray = projectInfoTfmCollection.ToArray();
+            projectInfo.AppExecInfoCollection = appExecInfoCollection;
 
             SendMessage(projectInfo);
             return true;
@@ -161,17 +160,17 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return true;
         }
 
-        private bool TryResolveProjectInfoByTfm(out ProjectInfoByTfm projectInfoByTfm, string targetFramework = "")
+        private bool TryResolveAppExecInfo(out AppExecInfo appExecInfo, string targetFramework = "")
         {
-            projectInfoByTfm = default!;
+            appExecInfo = default!;
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
             var props = GetGlobalProperties(targetFramework);
 
-            var isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetNamesByTfm, props, targetOutputs);
+            var isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetNamesAppExecInfo, props, targetOutputs);
             if (!isSuccess)
                 return false;
 
-            projectInfoByTfm = SelectProjectInfoByTfm(targetOutputs);
+            appExecInfo = SelectProjectInfoByTfm(targetOutputs);
 
             return true;
         }
@@ -213,7 +212,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             };
 
         // ReSharper disable once InconsistentNaming
-        private static ProjectInfoByTfm SelectProjectInfoByTfm(Dictionary<string, ITaskItem[]> targetOutputs) =>
+        private static AppExecInfo SelectProjectInfoByTfm(Dictionary<string, ITaskItem[]> targetOutputs) =>
             new()
             {
                 TargetFramework = targetOutputs.ResultFromSingle(SelectInfoTargetFramework),

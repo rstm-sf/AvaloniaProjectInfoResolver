@@ -13,13 +13,10 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
             {
                 switch (property.Name)
                 {
-                    case nameof(ProjectInfo.ProjectInfoByTfmArray):
+                    case nameof(ProjectInfo.AppExecInfoCollection):
                     {
-                        foreach (var info in projectInfo.ProjectInfoByTfmArray)
-                        {
-                            var node = new PropertyCollectionNode(rootNode, info);
-                            rootNode.Children.Add(node);
-                        }
+                        var node = new PropertyCollectionNode(rootNode, projectInfo.AppExecInfoCollection);
+                        rootNode.Children.Add(node);
                         break;
                     }
                     case nameof(ProjectInfo.XamlFileInfo):
