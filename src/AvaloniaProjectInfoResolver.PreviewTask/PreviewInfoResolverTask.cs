@@ -1,10 +1,12 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.Build.Framework;
 
@@ -136,7 +138,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (IsReferencesAvalonia(previewInfo))
             {
                 var xamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
-                    previewInfo.XamlFileInfo.ProjectPath, props);
+                    previewInfo.XamlFileInfo.ProjectPath, props, new List<string>());
                 previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
 
                 return true;
@@ -149,7 +151,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         }
 
         private List<XamlFileInfo> ResolveReferenceXamlFileInfoCollection(
-            string parentProjectPath, Dictionary<string, string> props)
+            string parentProjectPath, Dictionary<string, string> props, IReadOnlyList<string> projectReadies)
         {
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
             var xamlFileInfoCollection = new List<XamlFileInfo>();
@@ -158,13 +160,25 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 var currentProjectDirectory = Directory.GetParent(parentProjectPath)!.FullName;
 
                 var projectReferenceCollection = targetOutputs.ResultFromArray(SelectInfoProjectReference);
-                if (!string.IsNullOrEmpty(projectReferenceCollection[0]))
+                if (string.IsNullOrEmpty(projectReferenceCollection[0]))
+                    return xamlFileInfoCollection;
+
+                var projectReadiesInner = projectReadies.ToList();
+                foreach (var project in projectReferenceCollection)
                 {
-                    foreach (var project in projectReferenceCollection)
+                    var path = Path.Combine(currentProjectDirectory, project);
+                    if (TryResolvePreviewInfoCommonProjectReference(path, projectReadiesInner, out var xamlFileInfo))
                     {
-                        var path = Path.Combine(currentProjectDirectory, project);
-                        if (TryResolvePreviewInfoCommonProjectReference(path, out var xamlFileInfo))
-                            xamlFileInfoCollection.Add(xamlFileInfo);
+                        xamlFileInfoCollection.Add(new XamlFileInfo
+                        {
+                            ProjectPath = xamlFileInfo.ProjectPath,
+                            AvaloniaResource = xamlFileInfo.AvaloniaResource,
+                            AvaloniaXaml = xamlFileInfo.AvaloniaXaml,
+                        });
+                        xamlFileInfoCollection.AddRange(xamlFileInfo.ReferenceXamlFileInfoCollection);
+                        
+                        projectReadiesInner.Add(xamlFileInfo.ProjectPath);
+                        projectReadiesInner.AddRange(xamlFileInfo.ReferenceXamlFileInfoCollection.Select(x => x.ProjectPath));
                     }
                 }
             }
@@ -172,7 +186,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return xamlFileInfoCollection;
         }
 
-        private bool TryResolvePreviewInfoCommonProjectReference(string projectReference, out XamlFileInfo xamlFileInfo)
+        private bool TryResolvePreviewInfoCommonProjectReference(
+            string projectReference, IReadOnlyList<string> readies, out XamlFileInfo xamlFileInfo)
         {
             if (!TryResolvePreviewInfoTfms(projectReference, out var targetFrameworks))
             {
@@ -185,15 +200,22 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
             if (BuildEngine.BuildProjectFile(projectReference, TargetNamesCommon, props, targetOutputs))
             {
+                var projectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath);
+                if (readies.Contains(projectPath, StringComparer.OrdinalIgnoreCase))
+                {
+                    xamlFileInfo = default!;
+                    return false;
+                }
+
                 xamlFileInfo = new XamlFileInfo
                 {
-                    ProjectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath),
+                    ProjectPath = projectPath,
                     AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
                     AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
                 };
 
                 xamlFileInfo.ReferenceXamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
-                    xamlFileInfo.ProjectPath, props);
+                    xamlFileInfo.ProjectPath, props, readies);
 
                 return true;
             }
