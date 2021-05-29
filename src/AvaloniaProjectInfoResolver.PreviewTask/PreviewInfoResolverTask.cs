@@ -18,6 +18,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         // ReSharper disable InconsistentNaming
         private const string SelectInfoProjectReference = nameof(SelectInfoProjectReference);
         private const string SelectInfoProjectPath = nameof(SelectInfoProjectPath);
+        private const string SelectInfoOutputType = nameof(SelectInfoOutputType);
         private const string SelectInfoAvaloniaResource = nameof(SelectInfoAvaloniaResource);
         private const string SelectInfoAvaloniaXaml = nameof(SelectInfoAvaloniaXaml);
         private const string SelectInfoAvaloniaPreviewerNetCoreToolPath =
@@ -52,6 +53,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         };
 
         private static readonly string[] TargetGetProjectReference = {SelectInfoProjectReference};
+
+        private static readonly string[] TargetGetOutput = {SelectInfoOutputType};
 
         private static readonly string[] TargetGetTfms = {SelectInfoTargetFrameworks};
 
@@ -90,6 +93,12 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
         protected override bool ExecuteInner()
         {
+            if (!TryResolvePreviewInfoOutputType(ProjectFile, out var outputType))
+                return false;
+
+            if (outputType == "Library")
+                return false;
+
             if (!TryResolvePreviewInfoTfms(ProjectFile, out var targetFrameworks))
                 return false;
 
@@ -107,6 +116,20 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
             SendMessage(previewInfo);
             return true;
+        }
+
+        private bool TryResolvePreviewInfoOutputType(string projectFile, out string outputType)
+        {
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+
+            if (BuildEngine.BuildProjectFile(projectFile, TargetGetOutput, _globalPropertiesCommon, targetOutputs))
+            {
+                outputType = targetOutputs.ResultFromSingle(SelectInfoOutputType);
+                return true;
+            }
+
+            outputType = default!;
+            return false;
         }
 
         private bool TryResolvePreviewInfoTfms(string projectFile, out string[] targetFrameworks)

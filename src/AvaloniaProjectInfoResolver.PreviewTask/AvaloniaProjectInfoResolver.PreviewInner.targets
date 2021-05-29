@@ -3,6 +3,7 @@
 
   <Target Name="SelectInfoProjectReference" Returns="@(ProjectReference)" />
   <Target Name="SelectInfoProjectPath" Returns="$(ProjectPath)" />
+  <Target Name="SelectInfoOutputType" Returns="$(OutputType)" />
 
   <Target Name="SelectInfoAvaloniaResource" Returns="@(AvaloniaResource)" />
   <Target Name="SelectInfoAvaloniaXaml" Returns="@(AvaloniaXaml)" />
