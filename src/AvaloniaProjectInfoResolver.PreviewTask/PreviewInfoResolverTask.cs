@@ -88,19 +88,16 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
 
         protected override bool ExecuteInner()
         {
-            var isSuccess = TryResolvePreviewInfoTfms(out var targetFrameworks);
-            if (!isSuccess)
+            if (!TryResolvePreviewInfoTfms(ProjectFile, out var targetFrameworks))
                 return false;
 
-            isSuccess = TryResolvePreviewInfoCommon(out var previewInfo, targetFrameworks);
-            if (!isSuccess)
+            if (!TryResolvePreviewInfoCommon(out var previewInfo, targetFrameworks))
                 return false;
 
             var appExecInfoCollection = new List<AppExecInfo>(targetFrameworks.Length);
             foreach (var tfm in targetFrameworks)
             {
-                isSuccess = TryResolveAppExecInfo(out var appExecInfo, tfm);
-                if (!isSuccess)
+                if (!TryResolveAppExecInfo(out var appExecInfo, tfm))
                     return false;
                 appExecInfoCollection.Add(appExecInfo);
             }
@@ -110,13 +107,121 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return true;
         }
 
-        private bool IsReferencesAvalonia(PreviewInfo previewInfo)
+        private bool TryResolvePreviewInfoTfms(string projectFile, out string[] targetFrameworks)
         {
-            var isPreviewContains = !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetCoreToolPath)
-                                 || !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetFullToolPath);
-            if (isPreviewContains)
-                return true;
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
 
+            if (BuildEngine.BuildProjectFile(projectFile, TargetGetTfms, _globalPropertiesCommon, targetOutputs))
+            {
+                targetFrameworks = targetOutputs.ResultFromArray(SelectInfoTargetFrameworks);
+                return true;
+            }
+
+            targetFrameworks = default!;
+            return false;
+        }
+
+        private bool TryResolvePreviewInfoCommon(out PreviewInfo previewInfo, string[] targetFrameworks)
+        {
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var props = GetGlobalProperties(targetFrameworks[0]);
+
+            if (!BuildEngine.BuildProjectFile(ProjectFile, TargetNamesCommon, props, targetOutputs))
+            {
+                previewInfo = default!;
+                return false;
+            }
+
+            previewInfo = SelectPreviewInfoCommon(targetOutputs);
+            if (IsReferencesAvalonia(previewInfo))
+            {
+                var xamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
+                    previewInfo.XamlFileInfo.ProjectPath, props);
+                previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
+
+                return true;
+            }
+
+            LogProjectNotAvalonia();
+
+            previewInfo = default!;
+            return false;
+        }
+
+        private List<XamlFileInfo> ResolveReferenceXamlFileInfoCollection(
+            string parentProjectPath, Dictionary<string, string> props)
+        {
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var xamlFileInfoCollection = new List<XamlFileInfo>();
+            if (BuildEngine.BuildProjectFile(parentProjectPath, TargetGetProjectReference, props, targetOutputs))
+            {
+                var currentProjectDirectory = Directory.GetParent(parentProjectPath)!.FullName;
+
+                var projectReferenceCollection = targetOutputs.ResultFromArray(SelectInfoProjectReference);
+                if (!string.IsNullOrEmpty(projectReferenceCollection[0]))
+                {
+                    foreach (var project in projectReferenceCollection)
+                    {
+                        var path = Path.Combine(currentProjectDirectory, project);
+                        if (TryResolvePreviewInfoCommonProjectReference(path, out var xamlFileInfo))
+                            xamlFileInfoCollection.Add(xamlFileInfo);
+                    }
+                }
+            }
+
+            return xamlFileInfoCollection;
+        }
+
+        private bool TryResolvePreviewInfoCommonProjectReference(string projectReference, out XamlFileInfo xamlFileInfo)
+        {
+            if (!TryResolvePreviewInfoTfms(projectReference, out var targetFrameworks))
+            {
+                xamlFileInfo = default!;
+                return false;
+            }
+
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var props = GetGlobalProperties(targetFrameworks[0]);
+
+            if (BuildEngine.BuildProjectFile(projectReference, TargetNamesCommon, props, targetOutputs))
+            {
+                xamlFileInfo = new XamlFileInfo
+                {
+                    ProjectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath),
+                    AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
+                    AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
+                };
+
+                xamlFileInfo.ReferenceXamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
+                    xamlFileInfo.ProjectPath, props);
+
+                return true;
+            }
+
+            xamlFileInfo = default!;
+            return false;
+        }
+
+        private bool TryResolveAppExecInfo(out AppExecInfo appExecInfo, string targetFramework = "")
+        {
+            var targetOutputs = new Dictionary<string, ITaskItem[]>();
+            var props = GetGlobalProperties(targetFramework);
+
+            if (BuildEngine.BuildProjectFile(ProjectFile, TargetNamesAppExecInfo, props, targetOutputs))
+            {
+                appExecInfo = SelectAppExecInfo(targetOutputs);
+                return true;
+            }
+
+            appExecInfo = default!;
+            return false;
+        }
+
+        private static bool IsReferencesAvalonia(PreviewInfo previewInfo) =>
+            !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetCoreToolPath)
+            || !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetFullToolPath);
+
+        private void LogProjectNotAvalonia() =>
             BuildEngine.LogErrorEvent(new BuildErrorEventArgs(
                 "APIR",
                 string.Empty,
@@ -128,123 +233,6 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 "MSBuild project file does not reference AvaloniaUI",
                 string.Empty,
                 string.Empty));
-
-            return false;
-        }
-
-        private bool TryResolvePreviewInfoTfms(out string[] targetFrameworks)
-        {
-            targetFrameworks = default!;
-            var targetOutputs = new Dictionary<string, ITaskItem[]>();
-
-            var isSuccess = BuildEngine.BuildProjectFile(
-                ProjectFile, TargetGetTfms, _globalPropertiesCommon, targetOutputs);
-            if (!isSuccess)
-                return false;
-
-            targetFrameworks = targetOutputs.ResultFromArray(SelectInfoTargetFrameworks);
-
-            return true;
-        }
-
-        private bool TryResolvePreviewInfoCommon(out PreviewInfo previewInfo, string[] targetFrameworks)
-        {
-            previewInfo = default!;
-            var targetOutputs = new Dictionary<string, ITaskItem[]>();
-            var props = GetGlobalProperties(targetFrameworks[0]);
-
-            var isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetNamesCommon, props, targetOutputs);
-            if (!isSuccess)
-                return false;
-
-            previewInfo = SelectPreviewInfoCommon(targetOutputs);
-            if (!IsReferencesAvalonia(previewInfo))
-            {
-                previewInfo = default!;
-                return false;
-            }
-
-            var xamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
-                previewInfo.XamlFileInfo.ProjectPath, props);
-            previewInfo.XamlFileInfo.ReferenceXamlFileInfoCollection = xamlFileInfoCollection;
-
-            return true;
-        }
-
-        private List<XamlFileInfo> ResolveReferenceXamlFileInfoCollection(
-            string parentProjectPath, Dictionary<string, string> props)
-        {
-            var targetOutputs = new Dictionary<string, ITaskItem[]>();
-            var xamlFileInfoCollection = new List<XamlFileInfo>();
-            var isSuccess = BuildEngine.BuildProjectFile(
-                parentProjectPath, TargetGetProjectReference, props, targetOutputs);
-            if (isSuccess)
-            {
-                var currentProjectDirectory = Directory.GetParent(parentProjectPath)!.FullName;
-
-                var projectReferenceCollection = targetOutputs.ResultFromArray(SelectInfoProjectReference);
-                foreach (var project in projectReferenceCollection)
-                {
-                    if (string.IsNullOrEmpty(project))
-                        continue;
-
-                    var path = Path.Combine(currentProjectDirectory, project);
-                    isSuccess = TryResolvePreviewInfoCommonProjectReference(path, out var xamlFileInfo);
-                    if (isSuccess)
-                        xamlFileInfoCollection.Add(xamlFileInfo);
-                }
-            }
-
-            return xamlFileInfoCollection;
-        }
-
-        private bool TryResolvePreviewInfoCommonProjectReference(string projectReference, out XamlFileInfo xamlFileInfo)
-        {
-            xamlFileInfo = default!;
-
-            var isSuccess = TryResolvePreviewInfoTfms(out var targetFrameworks);
-            if (!isSuccess)
-                return false;
-
-            var targetOutputs = new Dictionary<string, ITaskItem[]>();
-            var props = GetGlobalProperties(targetFrameworks[0]);
-
-            isSuccess = BuildEngine.BuildProjectFile(projectReference, TargetNamesCommon, props, targetOutputs);
-            if (!isSuccess)
-                return false;
-
-            var projectPath = targetOutputs.ResultFromSingle(SelectInfoProjectPath);
-            // The project can be build, but in reality it cannot
-            if (string.IsNullOrEmpty(projectPath))
-                return false;
-
-            xamlFileInfo = new XamlFileInfo
-            {
-                ProjectPath = projectPath,
-                AvaloniaResource = targetOutputs.ResultFromArrayAsSingleSkipNonXaml(SelectInfoAvaloniaResource),
-                AvaloniaXaml = targetOutputs.ResultFromArrayAsSingle(SelectInfoAvaloniaXaml),
-            };
-
-            xamlFileInfo.ReferenceXamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
-                xamlFileInfo.ProjectPath, props);
-
-            return true;
-        }
-
-        private bool TryResolveAppExecInfo(out AppExecInfo appExecInfo, string targetFramework = "")
-        {
-            appExecInfo = default!;
-            var targetOutputs = new Dictionary<string, ITaskItem[]>();
-            var props = GetGlobalProperties(targetFramework);
-
-            var isSuccess = BuildEngine.BuildProjectFile(ProjectFile, TargetNamesAppExecInfo, props, targetOutputs);
-            if (!isSuccess)
-                return false;
-
-            appExecInfo = SelectAppExecInfo(targetOutputs);
-
-            return true;
-        }
 
         private Dictionary<string, string> GetGlobalProperties(string targetFramework) =>
             string.IsNullOrEmpty(targetFramework)
