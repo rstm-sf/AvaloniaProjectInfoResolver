@@ -21,4 +21,9 @@
       <ProjectReference Include="..\AvaloniaProjectInfoResolver\AvaloniaProjectInfoResolver.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="data\ConsoleApp1\ConsoleApp1.fsproj" CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="data\ConsoleApp1\Program.fs" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

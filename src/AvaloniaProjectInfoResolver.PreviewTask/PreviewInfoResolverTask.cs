@@ -97,7 +97,10 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 return false;
 
             if (outputType == "Library")
+            {
+                LogProjectNotExe();
                 return false;
+            }
 
             if (!TryResolvePreviewInfoTfms(ProjectFile, out var targetFrameworks))
                 return false;
@@ -269,13 +272,26 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         private void LogProjectNotAvalonia() =>
             BuildEngine.LogErrorEvent(new BuildErrorEventArgs(
                 "APIR",
-                string.Empty,
+                "001",
                 ProjectFile,
                 0,
                 0,
                 0,
                 0,
                 "MSBuild project file does not reference AvaloniaUI",
+                string.Empty,
+                string.Empty));
+
+        private void LogProjectNotExe() =>
+            BuildEngine.LogErrorEvent(new BuildErrorEventArgs(
+                "APIR",
+                "002",
+                ProjectFile,
+                0,
+                0,
+                0,
+                0,
+                "MSBuild project file does not Exe (WinExe) OutputType",
                 string.Empty,
                 string.Empty));
 

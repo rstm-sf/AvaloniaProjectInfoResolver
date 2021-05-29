@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -52,7 +53,8 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
         public async Task Should_ResolvePreviewProjectInfoAsync_TaskDebug_Not_References_Avalonia()
         {
             var projectInfoResolver = new ProjectInfoResolver();
-            var projPath = "../../../../../AvaloniaProjectInfoResolver/AvaloniaProjectInfoResolver.csproj";
+            var projPath = "./data/ConsoleApp1/ConsoleApp1.fsproj";
+            projPath = new FileInfo(projPath).FullName;
 
             var result = await projectInfoResolver.ResolvePreviewInfoAsync(projPath);
 
