@@ -105,7 +105,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             if (!TryResolvePreviewInfoTfms(ProjectFile, out var targetFrameworks))
                 return false;
 
-            if (!TryResolvePreviewInfoCommon(out var previewInfo, targetFrameworks))
+            if (!TryResolvePreviewInfoCommon(targetFrameworks, out var previewInfo))
                 return false;
 
             var appExecInfoCollection = new List<AppExecInfo>(targetFrameworks.Length);
@@ -149,7 +149,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return false;
         }
 
-        private bool TryResolvePreviewInfoCommon(out PreviewInfo previewInfo, string[] targetFrameworks)
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private bool TryResolvePreviewInfoCommon(string[] targetFrameworks, out PreviewInfo previewInfo)
         {
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
             var props = GetGlobalProperties(targetFrameworks[0]);
@@ -161,7 +162,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             }
 
             previewInfo = SelectPreviewInfoCommon(targetOutputs);
-            if (IsReferencesAvalonia(previewInfo))
+            if (ShouldReferencesAvalonia(previewInfo))
             {
                 var xamlFileInfoCollection = ResolveReferenceXamlFileInfoCollection(
                     previewInfo.XamlFileInfo.ProjectPath, props, new List<string>());
@@ -177,10 +178,13 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
         }
 
         private List<XamlFileInfo> ResolveReferenceXamlFileInfoCollection(
+            // ReSharper disable once SuggestBaseTypeForParameter
+            // ReSharper disable once ParameterTypeCanBeEnumerable.Local
             string parentProjectPath, Dictionary<string, string> props, IReadOnlyList<string> projectReadies)
         {
             var targetOutputs = new Dictionary<string, ITaskItem[]>();
             var xamlFileInfoCollection = new List<XamlFileInfo>();
+            // ReSharper disable once InvertIf
             if (BuildEngine.BuildProjectFile(parentProjectPath, TargetGetProjectReference, props, targetOutputs))
             {
                 var currentProjectDirectory = Directory.GetParent(parentProjectPath)!.FullName;
@@ -193,6 +197,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 foreach (var project in projectReferenceCollection)
                 {
                     var path = Path.Combine(currentProjectDirectory, project);
+                    // ReSharper disable once InvertIf
                     if (TryResolvePreviewInfoCommonProjectReference(path, projectReadiesInner, out var xamlFileInfo))
                     {
                         xamlFileInfoCollection.Add(new XamlFileInfo
@@ -265,7 +270,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             return false;
         }
 
-        private static bool IsReferencesAvalonia(PreviewInfo previewInfo) =>
+        private static bool ShouldReferencesAvalonia(PreviewInfo previewInfo) =>
             !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetCoreToolPath)
             || !string.IsNullOrEmpty(previewInfo.AvaloniaPreviewerNetFullToolPath);
 

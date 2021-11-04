@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -17,7 +18,7 @@ namespace AvaloniaProjectInfoResolver
 
         public string AvaloniaPreviewerNetFullToolPath { get; internal set; } = string.Empty;
 
-        public IReadOnlyList<AppExecInfo> AppExecInfoCollection { get; internal set; } = new AppExecInfo[0];
+        public IReadOnlyList<AppExecInfo> AppExecInfoCollection { get; internal set; } = Array.Empty<AppExecInfo>();
 
         public XamlFileInfo XamlFileInfo { get; internal set; } = new();
 
@@ -73,7 +74,7 @@ namespace AvaloniaProjectInfoResolver
 
         public string AvaloniaXaml { get; internal set; } = string.Empty;
 
-        public IReadOnlyList<XamlFileInfo> ReferenceXamlFileInfoCollection { get; internal set; } = new XamlFileInfo[0];
+        public IReadOnlyList<XamlFileInfo> ReferenceXamlFileInfoCollection { get; internal set; } = Array.Empty<XamlFileInfo>();
 
         public XmlSchema? GetSchema() => null;
 
