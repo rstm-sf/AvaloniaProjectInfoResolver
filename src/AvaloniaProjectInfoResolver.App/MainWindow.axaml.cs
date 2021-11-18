@@ -30,7 +30,7 @@ namespace AvaloniaProjectInfoResolver.App
         {
             var dialog = new OpenFileDialog();
             var fileNames = await dialog.ShowAsync(this);
-            interaction.SetOutput(fileNames.FirstOrDefault());
+            interaction.SetOutput(fileNames?.FirstOrDefault());
         }
     }
 }

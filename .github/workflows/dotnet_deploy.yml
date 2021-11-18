@@ -20,8 +20,8 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         sdk:
-          - { version: 3.1.407, framework: netcoreapp3.1 }
-          - { version: 5.0.201, framework: net5.0 }
+          - { version: 3.1.415, framework: netcoreapp3.1 }
+          - { version: 6.0.100, framework: net6.0 }
 
     name: ${{ matrix.os }} / ${{ matrix.sdk.version }}
     runs-on: ${{ matrix.os }}
@@ -50,11 +50,11 @@ jobs:
       run: dotnet test -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }} --no-build
 
     - name: Pack nugets
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '5.0.201' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '6.0.100' }}
       run: dotnet pack -c ${{ env.configuration }} --no-build
 
     - name: Upload artifact
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '5.0.201' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.sdk.version == '6.0.100' }}
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.zip-name }}
@@ -91,7 +91,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.201
+          dotnet-version: 6.0.100
 
       - name: Push nuget
         if: ${{ env.release-draft == 'false' }}
