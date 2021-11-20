@@ -200,18 +200,13 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                     // ReSharper disable once InvertIf
                     if (TryResolvePreviewInfoCommonProjectReference(path, projectReadiesInner, out var xamlFileInfo))
                     {
-                        if (ShouldContainsAvaloniaXaml(xamlFileInfo))
-                            xamlFileInfoCollection.Add(new XamlFileInfo
-                            {
-                                ProjectPath = xamlFileInfo.ProjectPath,
-                                AvaloniaResource = xamlFileInfo.AvaloniaResource,
-                                AvaloniaXaml = xamlFileInfo.AvaloniaXaml,
-                            });
-
-                        xamlFileInfoCollection.AddRange(
-                            xamlFileInfo.ReferenceXamlFileInfoCollection
-                                .Where(x =>
-                                    ShouldContainsAvaloniaXaml(x) || x.ReferenceXamlFileInfoCollection.Count > 0));
+                        xamlFileInfoCollection.Add(new XamlFileInfo
+                        {
+                            ProjectPath = xamlFileInfo.ProjectPath,
+                            AvaloniaResource = xamlFileInfo.AvaloniaResource,
+                            AvaloniaXaml = xamlFileInfo.AvaloniaXaml,
+                        });
+                        xamlFileInfoCollection.AddRange(xamlFileInfo.ReferenceXamlFileInfoCollection);
                         
                         projectReadiesInner.Add(xamlFileInfo.ProjectPath);
                         projectReadiesInner.AddRange(xamlFileInfo.ReferenceXamlFileInfoCollection.Select(x => x.ProjectPath));
@@ -325,9 +320,6 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
                 writer.Flush();
             }
         }
-
-        private static bool ShouldContainsAvaloniaXaml(XamlFileInfo value) =>
-            !(string.IsNullOrEmpty(value.AvaloniaResource) && string.IsNullOrEmpty(value.AvaloniaXaml));
 
         // ReSharper disable once InconsistentNaming
         private static PreviewInfo SelectPreviewInfoCommon(Dictionary<string, ITaskItem[]> targetOutputs) =>
