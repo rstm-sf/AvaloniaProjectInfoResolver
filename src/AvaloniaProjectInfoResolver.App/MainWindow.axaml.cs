@@ -18,7 +18,7 @@ namespace AvaloniaProjectInfoResolver.App
             this.AttachDevTools();
 #endif
             this.WhenActivated(d => d(
-                ViewModel.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog)));
+                ViewModel!.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog)));
         }
 
         private void InitializeComponent()
@@ -30,7 +30,7 @@ namespace AvaloniaProjectInfoResolver.App
         {
             var dialog = new OpenFileDialog();
             var fileNames = await dialog.ShowAsync(this);
-            interaction.SetOutput(fileNames.FirstOrDefault());
+            interaction.SetOutput(fileNames?.FirstOrDefault());
         }
     }
 }

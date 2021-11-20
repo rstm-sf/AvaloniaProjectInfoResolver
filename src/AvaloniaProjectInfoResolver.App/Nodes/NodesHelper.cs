@@ -6,23 +6,31 @@ namespace AvaloniaProjectInfoResolver.App.Nodes
 {
     internal static class NodesHelper
     {
-        public static RootNode SelectRootNode(ProjectInfo projectInfo)
+        public static RootNode SelectRootNode(PreviewInfo previewInfo)
         {
             var rootNode = new RootNode();
-            foreach (var property in GetProperties(typeof(ProjectInfo)))
+            foreach (var property in GetProperties(typeof(PreviewInfo)))
             {
-                if (property.Name == nameof(ProjectInfo.ProjectInfoByTfmArray))
+                switch (property.Name)
                 {
-                    foreach (var info in projectInfo.ProjectInfoByTfmArray)
+                    case nameof(PreviewInfo.AppExecInfoCollection):
                     {
-                        var node = new PropertyCollectionNode(rootNode, info);
+                        var node = new PropertyCollectionNode(rootNode, previewInfo.AppExecInfoCollection);
                         rootNode.Children.Add(node);
+                        break;
                     }
-                }
-                else
-                {
-                    var node = new PropertyNode(rootNode, property.Name, (string)property.GetValue(projectInfo, null)!);
-                    rootNode.Children.Add(node);
+                    case nameof(PreviewInfo.XamlFileInfo):
+                    {
+                        var node = new PropertyCollectionNode(rootNode, previewInfo.XamlFileInfo);
+                        rootNode.Children.Add(node);
+                        break;
+                    }
+                    default:
+                    {
+                        var node = new PropertyNode(rootNode, property.Name, (string)property.GetValue(previewInfo, null)!);
+                        rootNode.Children.Add(node);
+                        break;
+                    }
                 }
             }
 

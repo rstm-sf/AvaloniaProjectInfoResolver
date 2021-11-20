@@ -14,7 +14,7 @@ namespace AvaloniaProjectInfoResolver
         private static readonly string SelfDirectoryPath =
             Path.GetDirectoryName(typeof(ProjectInfoResolver).Assembly.Location)!;
 
-        public async Task<AvaloniaProjectInfoResult> ResolvePreviewProjectInfoAsync(
+        public async Task<AvaloniaPreviewInfoResult> ResolvePreviewInfoAsync(
             string projectFilePath, CancellationToken cancellationToken = default)
         {
             var receiverTask = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -47,20 +47,20 @@ namespace AvaloniaProjectInfoResolver
             if (cancellationToken.IsCancellationRequested)
             {
                 proc?.Kill();
-                return new AvaloniaProjectInfoResult(null, string.Empty);
+                return new AvaloniaPreviewInfoResult(null, string.Empty);
             }
 
             cancellationToken.Register(() => proc?.Kill());
 
-            var info = await ResolvePreviewProjectInfoAsync(receiverTask).ConfigureAwait(false);
+            var info = await ResolvePreviewInfoAsync(receiverTask).ConfigureAwait(false);
             var error = await ResolveLoggerProjectInfoAsync(receiverLogger).ConfigureAwait(false);
 
-            return new AvaloniaProjectInfoResult(
+            return new AvaloniaPreviewInfoResult(
                 cancellationToken.IsCancellationRequested ? null : info,
                 error);
         }
 
-        private static async Task<ProjectInfo?> ResolvePreviewProjectInfoAsync(AnonymousPipeServerStream receiver)
+        private static async Task<PreviewInfo?> ResolvePreviewInfoAsync(AnonymousPipeServerStream receiver)
         {
             string line;
             var sb = new StringBuilder();
@@ -72,7 +72,7 @@ namespace AvaloniaProjectInfoResolver
             var xmlData = sb.ToString();
             return string.IsNullOrEmpty(xmlData)
                 ? null
-                : (ProjectInfo)DeserializeFromXml(xmlData, typeof(ProjectInfo));
+                : (PreviewInfo)DeserializeFromXml(xmlData, typeof(PreviewInfo));
         }
 
         private static async Task<string> ResolveLoggerProjectInfoAsync(AnonymousPipeServerStream receiver)

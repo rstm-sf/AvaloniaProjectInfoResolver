@@ -14,7 +14,7 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
     public abstract class ContextAwareTask : Task
     {
         protected virtual string ManagedDllDirectory =>
-            Path.GetDirectoryName(new Uri(GetType().GetTypeInfo().Assembly.CodeBase).LocalPath);
+            Path.GetDirectoryName(new Uri(GetType().GetTypeInfo().Assembly.CodeBase).LocalPath)!;
 
         protected virtual string? UnmanagedDllDirectory => null;
 
@@ -46,8 +46,8 @@ namespace AvaloniaProjectInfoResolver.PreviewTask
             }
 
             var executeInnerMethod =
-                innerTaskType.GetMethod(nameof(ExecuteInner), BindingFlags.Instance | BindingFlags.NonPublic);
-            var result = (bool)executeInnerMethod.Invoke(innerTask, new object[0]);
+                innerTaskType.GetMethod(nameof(ExecuteInner), BindingFlags.Instance | BindingFlags.NonPublic)!;
+            var result = (bool)executeInnerMethod.Invoke(innerTask, Array.Empty<object>());
 
             foreach (var propertyPair in outputPropertiesMap)
             {

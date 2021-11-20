@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
@@ -24,10 +25,10 @@
     </Content>
   </ItemGroup>
 
-  <!-- Needs for sdk <= 3.1 -->
+  <!-- Needs for sdk <= 3.1 (tests) -->
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies"
-                      Version="1.0.0"
+                      Version="1.0.2"
                       PrivateAssets="All" />
   </ItemGroup>
 

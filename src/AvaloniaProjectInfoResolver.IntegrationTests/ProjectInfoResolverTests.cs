@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,26 +14,25 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
         {
             var projectInfoResolver = new ProjectInfoResolver();
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(AvaloniaAppProjPath);
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(AvaloniaAppProjPath);
 
             Assert.False(result.HasError);
             Assert.Equal(result.Error, string.Empty);
 
-            var info = result.ProjectInfo!;
+            var info = result.PreviewInfo!;
             Assert.NotNull(info);
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetCoreToolPath));
             Assert.False(string.IsNullOrEmpty(info.AvaloniaPreviewerNetFullToolPath));
-            Assert.Equal(string.Empty, info.AvaloniaResource);
-            Assert.False(string.IsNullOrEmpty(info.AvaloniaXaml));
-            Assert.Equal(string.Empty, info.TargetFrameworks);
+            Assert.Equal(string.Empty, info.XamlFileInfo.AvaloniaResource);
+            Assert.False(string.IsNullOrEmpty(info.XamlFileInfo.AvaloniaXaml));
 
-            var infoByTfm = info.ProjectInfoByTfmArray;
-            Assert.Single(infoByTfm);
-            Assert.Equal("netcoreapp3.1", infoByTfm[0].TargetFramework);
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].TargetPath));
-            Assert.Equal(".NETCoreApp", infoByTfm[0].TargetFrameworkIdentifier);
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectDepsFilePath));
-            Assert.False(string.IsNullOrEmpty(infoByTfm[0].ProjectRuntimeConfigFilePath));
+            var appExecInfoCollection = info.AppExecInfoCollection;
+            Assert.Single(appExecInfoCollection);
+            Assert.Equal("netcoreapp3.1", appExecInfoCollection[0].TargetFramework);
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].TargetPath));
+            Assert.Equal(".NETCoreApp", appExecInfoCollection[0].TargetFrameworkIdentifier);
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].ProjectDepsFilePath));
+            Assert.False(string.IsNullOrEmpty(appExecInfoCollection[0].ProjectRuntimeConfigFilePath));
         }
 
         [Fact]
@@ -41,25 +41,26 @@ namespace AvaloniaProjectInfoResolver.IntegrationTests
             var projectInfoResolver = new ProjectInfoResolver();
             using var cancellationTokenSource = new CancellationTokenSource(100);
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(
                 AvaloniaAppProjPath, cancellationTokenSource.Token);
 
             Assert.False(result.HasError);
             Assert.Equal(result.Error, string.Empty);
-            Assert.Null(result.ProjectInfo);
+            Assert.Null(result.PreviewInfo);
         }
 
         [Fact]
         public async Task Should_ResolvePreviewProjectInfoAsync_TaskDebug_Not_References_Avalonia()
         {
             var projectInfoResolver = new ProjectInfoResolver();
-            var projPath = "../../../../../AvaloniaProjectInfoResolver/AvaloniaProjectInfoResolver.csproj";
+            var projPath = "./data/ConsoleApp1/ConsoleApp1.fsproj";
+            projPath = new FileInfo(projPath).FullName;
 
-            var result = await projectInfoResolver.ResolvePreviewProjectInfoAsync(projPath);
+            var result = await projectInfoResolver.ResolvePreviewInfoAsync(projPath);
 
             Assert.True(result.HasError);
             Assert.Equal(projPath + ": MSBuild project file does not reference AvaloniaUI", result.Error);
-            Assert.Null(result.ProjectInfo);
+            Assert.Null(result.PreviewInfo);
         }
     }
 }

@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- For test netcoreapp3.1 -->
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AvaloniaVersion>0.10.0</AvaloniaVersion>
+    <AvaloniaVersion>0.10.10</AvaloniaVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />

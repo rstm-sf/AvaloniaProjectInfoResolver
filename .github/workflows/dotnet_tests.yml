@@ -18,8 +18,8 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         sdk:
-          - { version: 3.1.407, framework: netcoreapp3.1 }
-          - { version: 5.0.201, framework: net5.0 }
+          - { version: 3.1.415, framework: netcoreapp3.1 }
+          - { version: 6.0.100, framework: net6.0 }
 
     name: ${{ matrix.os }} / ${{ matrix.sdk.version }}
     runs-on: ${{ matrix.os }}
@@ -36,13 +36,13 @@ jobs:
       run: dotnet restore
 
     - name: Build main library
-      working-directory: src/AvaloniaProjectInfoResolver
+      working-directory: ./src/AvaloniaProjectInfoResolver
       run: dotnet build -c ${{ env.configuration }}
 
     - name: Build tests
-      working-directory: src/AvaloniaProjectInfoResolver.IntegrationTests
+      working-directory: ./src/AvaloniaProjectInfoResolver.IntegrationTests
       run: dotnet build -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }}
 
     - name: Run tests
-      working-directory: src/AvaloniaProjectInfoResolver.IntegrationTests
+      working-directory: ./src/AvaloniaProjectInfoResolver.IntegrationTests
       run: dotnet test -c ${{ env.configuration }} -f ${{ matrix.sdk.framework }} --no-build

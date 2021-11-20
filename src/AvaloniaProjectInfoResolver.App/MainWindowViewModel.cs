@@ -86,11 +86,11 @@ namespace AvaloniaProjectInfoResolver.App
             var (avaloniaProjectProps, errors) = await Task.Run(
                 async () =>
                 {
-                    var result = await ProjectInfoResolver.ResolvePreviewProjectInfoAsync(
+                    var result = await ProjectInfoResolver.ResolvePreviewInfoAsync(
                         fileName, cancellationToken);
                     var rootNode = cancellationToken.IsCancellationRequested || result.HasError
                         ? null
-                        : NodesHelper.SelectRootNode(result.ProjectInfo!);
+                        : NodesHelper.SelectRootNode(result.PreviewInfo!);
                     return (rootNode, result.Error);
                 },
                 cancellationToken);
